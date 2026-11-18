@@ -1,0 +1,11 @@
+# The west workspace: Python environment, west's configuration and the fetched Zephyr (tools/setup.sh)
+.venv/
+.west/
+deps/
+
+# Build output: west build and Twister
+build*/
+twister-out*/
+
+# native_sim's simulated flash when a test app is run by hand
+flash.bin
