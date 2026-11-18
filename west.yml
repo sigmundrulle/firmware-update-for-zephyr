@@ -1,0 +1,20 @@
+# The west workspace for building and testing the module on its own (tools/setup.sh). An application that
+# uses the module has its own workspace and does not use this file.
+manifest:
+  remotes:
+    - name: zephyrproject-rtos
+      url-base: https://github.com/zephyrproject-rtos
+  projects:
+    - name: zephyr
+      remote: zephyrproject-rtos
+      revision: v4.4.2
+      path: zephyr
+      clone-depth: 1
+      west-commands: scripts/west-commands.yml
+      import:
+        path-prefix: deps
+        name-allowlist:
+          - mcuboot # MCUboot's API (bootutil) and imgtool
+          - zcbor # CBOR, used by mcumgr
+  self:
+    path: .
