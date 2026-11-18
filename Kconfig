@@ -1,0 +1,14 @@
+menuconfig FW_UPDATE
+	bool "Firmware update over SMP (mcumgr) through MCUboot"
+	help
+	  Receive a new image on the application's serial port over SMP, test-run it through MCUboot, and
+	  confirm or revert it. The application passes SMP frames to the module and reports its
+	  self-test result; see include/fw_update/fw_update.h.
+
+if FW_UPDATE
+
+module = FW_UPDATE
+module-str = fw_update
+source "subsys/logging/Kconfig.template.log_config"
+
+endif # FW_UPDATE
