@@ -11,8 +11,8 @@ context: what the module is for, what is decided, what is open, and how to work 
 ### Goals
 
 - One firmware update function that several products can use, delivered to customers as a module.
-- Product-neutral: nothing in the module depends on or names a particular product, board or
-  customer.
+- Product-neutral: nothing in the module depends on a particular product, board or customer.
+  non-secret products may be referred to as examples in the documentation.
 - Easy to add to a product: a git submodule or a west project, and one Kconfig option.
 - A product uses it fully, partly or not at all, through Kconfig options and a small C API.
 
