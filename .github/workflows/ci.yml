@@ -4,6 +4,18 @@ on:
   push:
 
 jobs:
+  # clang-format at the version in tools/clang-format/version.txt, the same as on a PC
+  format-check:
+    name: Check code formatting
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+      - name: Install clang-format
+        run: tools/clang-format/run.sh --version
+      - name: Check code formatting
+        run: tools/clang-format/check.sh
+
   tests:
     name: Run the tests on native_sim
     runs-on: ubuntu-24.04
