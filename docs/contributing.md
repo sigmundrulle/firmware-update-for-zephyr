@@ -22,4 +22,9 @@
 ## Tests
 
 * Run the tests before pushing: `west twister -T tests -p native_sim` (see [Development](development.md)).
-* New behaviour gets a test in `tests/`.
+* A branch that changes behaviour adds or updates tests for it in `tests/`, in the same pull request.
+* A bug fix gets a test that fails without the fix.
+* Documentation, comments and CI changes don't necessarily need a new test.
+* If a change can't be tested on `native_sim` (for example, it needs a real board), say so in the pull
+  request and explain why.
+
