@@ -27,7 +27,7 @@ zephyr-fw-update/
 ├── include/fw_update/   the C API
 ├── src/                 the implementation
 ├── tests/               Ztest apps, run by Twister on native_sim
-├── docs/                setup, development and decisions
+├── docs/                setup, development, contributing and decisions
 └── west.yml, tools/     workspace for developing the module; not used by a product
 ```
 
@@ -38,4 +38,5 @@ west project, and `zephyr/module.yml` does the rest.
 
 * [Setup](docs/setup.md): adding the module to a product
 * [Development](docs/development.md): building and testing the module on its own
-* [Decisions](docs/decisions.md): planned scope, decisions so far and open decisions
+* [Contributing](docs/contributing.md): branches, pull requests and review
+* [Decisions](docs/decisions.md): decisions so far, planned scope and open decisions
