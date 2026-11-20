@@ -5,63 +5,11 @@ image is received on the same serial port as the product's own commands, test-ru
 confirmed or reverted. It knows no product. A product adds it to its build, as a git submodule or a
 west project, and enables it with `CONFIG_FW_UPDATE=y`.
 
-This file is the starting point for anyone, person or AI, who opens the repository without earlier
-context: what the module is for, what is decided, what is open, and how to work here.
+This file is for AI tools (and people) that open the repository without earlier context: how to
+work here, and where the rest is documented.
 
-### Goals
-
-- One firmware update function that several products can use, delivered to customers as a module.
-- Product-neutral: nothing in the module depends on a particular product, board or customer.
-  non-secret products may be referred to as examples in the documentation.
-- Easy to add to a product: a git submodule or a west project, and one Kconfig option.
-- A product uses it fully, partly or not at all, through Kconfig options and a small C API.
-
-### Status
-
-**Skeleton.** The build integration, a smoke test, CI and the documentation exist. The C API is
-being designed, so `include/fw_update/fw_update.h` declares no functions and `src/fw_update.c` only
-registers the log module. Nothing is usable by a product yet.
-
-### Planned scope (agreed, not implemented)
-
-These responsibilities are planned for the module. The product keeps its own drivers and application
-logic and talks to the module through the C API.
-
-| In the module | In the product |
-|---|---|
-| The SMP transport on the product's serial port, shared with the product's text commands | Its serial driver separates SMP frames from text and passes the frames to the module |
-| Writing SMP responses through a write function the product gives at startup | Writing the responses on its serial port |
-| A reset hook with a handshake: "restart requested", then "app ready", with a time limit | An orderly shutdown before the restart, then "ready" |
-| Checking that a received image is for the right board (board target in a TLV), erasing it if not | – |
-| Kconfig defaults for mcumgr (progressive erase, hash, size checks) | – |
-| Confirm or reset based on the self-test result the product reports; rejecting confirm while the self-test runs | The self-test, and reporting its result |
-| Reading MCUboot's state: running version, confirmed or not, the image in the second slot | Showing it, if the product wants to |
-
-MCUboot runs in **swap using offset** on products where the image fits in the internal flash. The
-new image is written one sector into the second slot; after a swap, the previous image is at the
-start of that slot, so whatever reads the header there must handle both places. RAM-load products
-are not part of the first version.
-
-### Decisions so far
-
-| Decision | Choice |
-|---|---|
-| Where the module lives | Its own repository from the start, not inside a product, so it can be delivered on its own |
-| How a product gets it | A git submodule (with `ZEPHYR_EXTRA_MODULES`) or a west project; both are documented in `docs/setup.md` |
-| Zephyr | The module brings no Zephyr; it is built with the product's. Development uses Zephyr v4.4.2 |
-| Tests | Ztest on `native_sim` (32-bit, like the boards) with the host's gcc, run by Twister |
-| Language of the repository | English, since the module goes to other customers |
-| Visibility and review | Public repository; `main` only through approved pull requests (see Agent Guardrails) |
-
-### Open decisions
-
-- The C API: functions, types and their names.
-- Code style and `.clang-format`: Zephyr's style or another one.
-- The license (there is none yet).
-- Versions and tags: when a product-facing version is tagged.
-- The word *test* (MCUboot's and mcumgr's) or *trial* for the state between swap and confirm.
-- The size of the buffer for SMP responses, and that mcumgr finds the previous image at the start of
-  the second slot after a swap.
+Goals and status are in [README.md](README.md). The planned scope, the decisions so far and the
+open decisions are in [docs/decisions.md](docs/decisions.md): read it before changing anything.
 
 ## Repository Structure
 
@@ -73,7 +21,7 @@ are not part of the first version.
 - `include/fw_update/` – the public C API (`fw_update.h`, empty for now).
 - `src/` – the implementation (`fw_update.c`, only the log module for now).
 - `tests/` – Ztest apps, one folder each, run by Twister on `native_sim` (`tests/smoke/`).
-- `docs/` – setup in a product, development, and contributing.
+- `docs/` – setup in a product, development, contributing, and decisions.
 - `west.yml`, `tools/` – the west workspace for developing the module on its own; not used by a
   product.
 - `.github/workflows/` – CI.
@@ -106,6 +54,12 @@ west build -p always -b native_sim -s tests/smoke -d build/smoke
 build/smoke/zephyr/zephyr.exe
 ```
 
+`tools/env.sh` sets the environment for the module's own workspace (not used by a product):
+
+- `FW_UPDATE_ROOT` – the repository root.
+- `ZEPHYR_BASE` – `deps/zephyr`.
+- `ZEPHYR_TOOLCHAIN_VARIANT=host` – builds with the host's gcc (native_sim only).
+
 Host packages: `git`, `cmake`, `python3` with `venv`, `gcc` and `gcc-multilib` (native_sim is
 32-bit). CI also installs `ninja-build`, `gperf` and `device-tree-compiler`.
 
@@ -121,8 +75,8 @@ Host packages: `git`, `cmake`, `python3` with `venv`, `gcc` and `gcc-multilib` (
 - Names: module `fw_update`, Kconfig symbols `FW_UPDATE_*`, public headers under
   `include/fw_update/`, log module `fw_update`.
 - Kconfig files are indented with tabs, as in Zephyr.
-- The module must stay product-neutral: no product, board or customer names in code, docs or
-  commits.
+- The module must stay product-neutral: no product, board or customer names in code or commits.
+  The documentation may name non-secret products as examples.
 - Commits: small and reviewable one at a time; summary in the imperative, under 72 characters, then
   a blank line and the why if it is not obvious:
 
@@ -132,7 +86,7 @@ Host packages: `git`, `cmake`, `python3` with `venv`, `gcc` and `gcc-multilib` (
   Why the change is needed, if it is not obvious.
   ```
 
-> TODO: formatting rules and the `.clang-format` (see Open decisions).
+> TODO: formatting rules and the `.clang-format` (see the open decisions in `docs/decisions.md`).
 
 > TODO: naming rules for the C API's functions and types.
 
@@ -150,10 +104,11 @@ flowchart LR
   and builds `CMakeLists.txt` when `CONFIG_FW_UPDATE=y`.
 - The repository's own `west.yml` (Zephyr v4.4.2, `mcuboot`, `zcbor`) exists only to build and test
   the module without a product.
-- Planned data flow (see Planned scope): the product passes SMP frames from its serial port to the
-  module; the module receives the image through mcumgr into the second slot and has MCUboot test-run
-  it after a restart; the product reports its self-test result, and the module confirms the image or
-  resets so that MCUboot reverts it. None of this is implemented yet.
+- Planned data flow (see the planned scope in `docs/decisions.md`): the product passes SMP frames
+  from its serial port to the module; the module receives the image through mcumgr into the second
+  slot and has MCUboot test-run it after a restart; the product reports its self-test result, and
+  the module confirms the image or resets so that MCUboot reverts it. None of this is implemented
+  yet.
 
 ## Testing Strategy
 
@@ -185,9 +140,9 @@ flowchart LR
 ## Agent Guardrails
 
 - **Keep this file current.** Whenever a change affects what this file describes (structure,
-  commands, decisions, status, open questions, conventions), update `AGENTS.md` in the same pull
-  request. Keep it short: replace outdated text instead of adding history, and put details in
-  `docs/`.
+  commands, conventions), update `AGENTS.md` in the same pull request; decisions, scope and open
+  questions go in `docs/decisions.md`, status and goals in `README.md`. Keep it short: replace
+  outdated text instead of adding history, and put details in `docs/`.
 - Never push to `main`. A ruleset on the default branch requires a pull request approved by someone
   other than the last pusher, with all comment threads resolved; force-push and deletion of `main`
   are blocked.
@@ -195,7 +150,8 @@ flowchart LR
 - Keep a pushed branch up to date with `git merge origin/main`, not rebase or force-push.
 - Never commit or edit generated or fetched files: `.venv/`, `.west/`, `deps/`, `build*/`,
   `twister-out*/`, `flash.bin`.
-- Keep the module product-neutral: no product, board or customer names.
+- Keep the module product-neutral: no product, board or customer names in code or commits; in the
+  documentation, only non-secret products, as examples.
 - Do not add functions to the public C API without agreement in a reviewed pull request: the API is
   still being designed.
 - Do not invent facts: if something is not in the repository or was not tested, say so.
@@ -203,14 +159,13 @@ flowchart LR
 
 ## Extensibility Hooks
 
+What a product can set or connect to change how the module works.
+
 | Hook | Where | Effect |
 |---|---|---|
 | `CONFIG_FW_UPDATE` | `Kconfig` | Builds the module into the application |
 | `CONFIG_FW_UPDATE_LOG_LEVEL` | `Kconfig` (Zephyr's log template) | The module's log level |
 | `ZEPHYR_EXTRA_MODULES` | The product's `CMakeLists.txt` | How a product finds the module as a git submodule |
-| `FW_UPDATE_ROOT` | `tools/env.sh` | The repository root, set when the workspace is activated |
-| `ZEPHYR_BASE` | `tools/env.sh` | `deps/zephyr` in the module's own workspace |
-| `ZEPHYR_TOOLCHAIN_VARIANT=host` | `tools/env.sh` | Builds with the host's gcc (native_sim only) |
 
 > TODO: the module's own Kconfig options and C API hooks, once designed.
 
@@ -220,3 +175,4 @@ flowchart LR
 - [docs/setup.md](docs/setup.md) – adding the module to a product.
 - [docs/development.md](docs/development.md) – building and testing the module on its own.
 - [docs/contributing.md](docs/contributing.md) – branches, pull requests and review.
+- [docs/decisions.md](docs/decisions.md) – planned scope, decisions and open decisions.
