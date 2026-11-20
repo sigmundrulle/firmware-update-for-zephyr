@@ -11,7 +11,7 @@ request as the change that makes or changes a decision.
 | How a product gets it | A git submodule (with `ZEPHYR_EXTRA_MODULES`) or a west project; both are documented in [setup](setup.md) |
 | Zephyr | The module brings no Zephyr; it is built with the product's. Development uses Zephyr v4.4.2 |
 | Tests | Ztest on `native_sim` (32-bit, like the boards) with the host's gcc, run by Twister |
-| Language of the repository | English, since the module goes to other customers |
+| Language of the tracked files in the repository | English, since the module goes to other customers |
 | Visibility and review | Public repository; `main` only through approved pull requests |
 
 ## Planned scope (agreed, not implemented)
