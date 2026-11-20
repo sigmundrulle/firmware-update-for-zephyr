@@ -161,5 +161,5 @@ What a product can set or connect to change how the module works.
 - [README.md](README.md) – what the module is, and the folder layout.
 - [docs/setup.md](docs/setup.md) – adding the module to a product.
 - [docs/development.md](docs/development.md) – building and testing the module on its own.
-- [docs/contributing.md](docs/contributing.md) – branches, pull requests and review.
-- [docs/decisions.md](docs/decisions.md) – planned scope, decisions and open decisions.
+- [docs/contributing.md](docs/contributing.md) – branches, pull requests, review, commits and tests.
+- [docs/decisions.md](docs/decisions.md) – decisions so far, planned scope and open decisions.

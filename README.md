@@ -38,5 +38,5 @@ west project, and `zephyr/module.yml` does the rest.
 
 * [Setup](docs/setup.md): adding the module to a product
 * [Development](docs/development.md): building and testing the module on its own
-* [Contributing](docs/contributing.md): branches, pull requests and review
+* [Contributing](docs/contributing.md): branches, pull requests, review, commits and tests
 * [Decisions](docs/decisions.md): decisions so far, planned scope and open decisions
