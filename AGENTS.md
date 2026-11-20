@@ -8,8 +8,10 @@ west project, and enables it with `CONFIG_FW_UPDATE=y`.
 This file is for AI tools (and people) that open the repository without earlier context: how to
 work here, and where the rest is documented.
 
-Goals and status are in [README.md](README.md). The planned scope, the decisions so far and the
-open decisions are in [docs/decisions.md](docs/decisions.md): read it before changing anything.
+Goals and status are in [README.md](README.md). The decisions so far, the planned scope and the
+open decisions are in [docs/decisions.md](docs/decisions.md): read it before changing anything. How
+we work (branches, pull requests, review, commits, tests) is in
+[docs/contributing.md](docs/contributing.md).
 
 ## Repository Structure
 
@@ -75,16 +77,7 @@ Host packages: `git`, `cmake`, `python3` with `venv`, `gcc` and `gcc-multilib` (
 - Names: module `fw_update`, Kconfig symbols `FW_UPDATE_*`, public headers under
   `include/fw_update/`, log module `fw_update`.
 - Kconfig files are indented with tabs, as in Zephyr.
-- The module must stay product-neutral: no product, board or customer names in code or commits.
-  The documentation may name non-secret products as examples.
-- Commits: small and reviewable one at a time; summary in the imperative, under 72 characters, then
-  a blank line and the why if it is not obvious:
-
-  ```
-  Add the reset hook
-
-  Why the change is needed, if it is not obvious.
-  ```
+- Commits: see `docs/contributing.md`.
 
 > TODO: formatting rules and the `.clang-format` (see the open decisions in `docs/decisions.md`).
 
@@ -116,12 +109,10 @@ flowchart LR
   built as a Linux program) with the host's gcc. No board or Zephyr SDK is needed.
 - `tests/smoke/`: builds an app with `CONFIG_FW_UPDATE=y` and checks that the module is enabled. The
   build fails if Zephyr does not find the module (`undefined symbol FW_UPDATE`).
-- Locally: `west twister -T tests -p native_sim`.
 - CI (`.github/workflows/ci.yml`): on every push, `tools/setup.sh`, then `west twister -T tests -p
   native_sim --outdir twister-out --inline-logs`; the report `twister-out/twister.xml` is uploaded
   as an artifact (kept 3 days).
-- CI runs on push only, so it tests the branch, not its merge with `main`.
-- New behaviour gets a test in `tests/`.
+- Which changes need tests, and when to run them: see `docs/contributing.md`.
 
 > TODO: tests on real boards (hardware-in-the-loop), and tests that build for board targets.
 
@@ -139,15 +130,12 @@ flowchart LR
 
 ## Agent Guardrails
 
-- **Keep this file current.** Whenever a change affects what this file describes (structure,
-  commands, conventions), update `AGENTS.md` in the same pull request; decisions, scope and open
-  questions go in `docs/decisions.md`, status and goals in `README.md`. Keep it short: replace
-  outdated text instead of adding history, and put details in `docs/`.
-- Never push to `main`. A ruleset on the default branch requires a pull request approved by someone
-  other than the last pusher, with all comment threads resolved; force-push and deletion of `main`
-  are blocked.
-- One change per branch and pull request; merge with "Create a merge commit".
-- Keep a pushed branch up to date with `git merge origin/main`, not rebase or force-push.
+- **Keep the documentation current, in one place.** Whenever a change affects what this file
+  describes (structure, commands, conventions), update `AGENTS.md` in the same pull request;
+  decisions, scope and open questions go in `docs/decisions.md`, status and goals in `README.md`,
+  how we work in `docs/contributing.md`. Write each rule in one file only and link to it from the
+  others. Keep it short: replace outdated text instead of adding history.
+- Follow `docs/contributing.md` for branches, pull requests, commits and tests.
 - Never commit or edit generated or fetched files: `.venv/`, `.west/`, `deps/`, `build*/`,
   `twister-out*/`, `flash.bin`.
 - Keep the module product-neutral: no product, board or customer names in code or commits; in the
@@ -155,7 +143,6 @@ flowchart LR
 - Do not add functions to the public C API without agreement in a reviewed pull request: the API is
   still being designed.
 - Do not invent facts: if something is not in the repository or was not tested, say so.
-- Run `west twister -T tests -p native_sim` before pushing.
 
 ## Extensibility Hooks
 

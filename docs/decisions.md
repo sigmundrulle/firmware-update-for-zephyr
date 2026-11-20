@@ -3,6 +3,17 @@
 What is decided about the module, what is planned and what is still open. Update this file in the same pull
 request as the change that makes or changes a decision.
 
+## Decisions so far
+
+| Decision | Choice |
+|---|---|
+| Where the module lives | Its own repository from the start, not inside a product, so it can be delivered on its own |
+| How a product gets it | A git submodule (with `ZEPHYR_EXTRA_MODULES`) or a west project; both are documented in [setup](setup.md) |
+| Zephyr | The module brings no Zephyr; it is built with the product's. Development uses Zephyr v4.4.2 |
+| Tests | Ztest on `native_sim` (32-bit, like the boards) with the host's gcc, run by Twister |
+| Language of the repository | English, since the module goes to other customers |
+| Visibility and review | Public repository; `main` only through approved pull requests |
+
 ## Planned scope (agreed, not implemented)
 
 These responsibilities are planned for the module. The product keeps its own drivers and application logic
@@ -22,17 +33,6 @@ MCUboot runs in **swap using offset** on products where the image fits in the in
 is written one sector into the second slot; after a swap, the previous image is at the start of that slot,
 so whatever reads the header there must handle both places. RAM-load products are not part of the first
 version.
-
-## Decisions so far
-
-| Decision | Choice |
-|---|---|
-| Where the module lives | Its own repository from the start, not inside a product, so it can be delivered on its own |
-| How a product gets it | A git submodule (with `ZEPHYR_EXTRA_MODULES`) or a west project; both are documented in [setup](setup.md) |
-| Zephyr | The module brings no Zephyr; it is built with the product's. Development uses Zephyr v4.4.2 |
-| Tests | Ztest on `native_sim` (32-bit, like the boards) with the host's gcc, run by Twister |
-| Language of the repository | English, since the module goes to other customers |
-| Visibility and review | Public repository; `main` only through approved pull requests |
 
 ## Open decisions
 
