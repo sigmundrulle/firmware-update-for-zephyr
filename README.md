@@ -1,7 +1,10 @@
-# zephyr-fw-update
+# Firmware update for Zephyr (fuz)
+
+**fuz** stands for **F**irmware **U**pdate for **Z**ephyr: the module's name in Zephyr, and the prefix of its
+Kconfig options (`CONFIG_FUZ_*`) and C API (`fuz_*`). Not related to fuzz testing.
 
 A Zephyr module for firmware update over SMP (mcumgr) through MCUboot. It knows no product: a product adds
-it to its build and enables it with `CONFIG_FW_UPDATE=y`.
+it to its build and enables it with `CONFIG_FUZ=y`.
 
 ## Goals
 
@@ -14,17 +17,17 @@ it to its build and enables it with `CONFIG_FW_UPDATE=y`.
 ## Status
 
 **Skeleton.** The build integration, a smoke test, CI and the documentation exist. The C API is being
-designed, so `include/fw_update/fw_update.h` declares no functions and `src/fw_update.c` only registers the
+designed, so `include/fuz/fuz.h` declares no functions and `src/fuz.c` only registers the
 log module. Nothing is usable by a product yet.
 
 ## Architecture
 
 ```
-zephyr-fw-update/
+firmware-update-for-zephyr/
 ├── zephyr/module.yml    tells Zephyr where the module's CMake and Kconfig are
-├── Kconfig              CONFIG_FW_UPDATE and the module's options
+├── Kconfig              CONFIG_FUZ and the module's options
 ├── CMakeLists.txt       builds src/ into the application
-├── include/fw_update/   the C API
+├── include/fuz/   the C API
 ├── src/                 the implementation
 ├── tests/               Ztest apps, run by Twister on native_sim
 ├── docs/                setup, development, contributing and decisions

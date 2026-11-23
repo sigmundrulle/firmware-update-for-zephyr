@@ -1,14 +1,14 @@
-menuconfig FW_UPDATE
-	bool "Firmware update over SMP (mcumgr) through MCUboot"
+menuconfig FUZ
+	bool "Firmware update for Zephyr (fuz): over SMP (mcumgr) through MCUboot"
 	help
 	  Receive a new image on the application's serial port over SMP, test-run it through MCUboot, and
 	  confirm or revert it. The application passes SMP frames to the module and reports its
-	  self-test result; see include/fw_update/fw_update.h.
+	  self-test result; see include/fuz/fuz.h.
 
-if FW_UPDATE
+if FUZ
 
-module = FW_UPDATE
-module-str = fw_update
+module = FUZ
+module-str = fuz
 source "subsys/logging/Kconfig.template.log_config"
 
-endif # FW_UPDATE
+endif # FUZ
