@@ -1,9 +1,18 @@
 menuconfig FUZ
 	bool "Firmware update for Zephyr (fuz): over SMP (mcumgr) through MCUboot"
+	depends on BOOTLOADER_MCUBOOT || ZTEST
+	depends on !MCUBOOT_BOOTLOADER_MODE_RAM_LOAD
+	select FLASH if BOOTLOADER_MCUBOOT
+	select FLASH_MAP if BOOTLOADER_MCUBOOT
+	select STREAM_FLASH if BOOTLOADER_MCUBOOT
+	select IMG_MANAGER if BOOTLOADER_MCUBOOT
 	help
-	  Receive a new image on the application's serial port over SMP, test-run it through MCUboot, and
-	  confirm or revert it. The application passes SMP frames to the module and reports its
-	  self-test result; see include/fuz/fuz.h.
+	  Receive a new image on the application's serial port over SMP, test-run it through
+	  MCUboot, and confirm or revert it. The application passes SMP frames to the module and
+	  reports its self-test result; see include/fuz/fuz.h.
+
+	  Needs an application built with MCUboot (west build --sysbuild). MCUboot's RAM load
+	  mode is not supported: it has no test run, confirm or revert.
 
 if FUZ
 
