@@ -1,9 +1,9 @@
 # Project Overview
 
-`firmware-update-for-zephyr` is a Zephyr module for firmware update over SMP (mcumgr) through MCUboot: a new
-image is received on the same serial port as the product's own commands, test-run, and then
-confirmed or reverted. It knows no product. A product adds it to its build, as a git submodule or a
-west project, and enables it with `CONFIG_FUZ=y`.
+`firmware-update-for-zephyr` is a Zephyr module for firmware update over SMP (mcumgr) through
+MCUboot: a new image is received on the same serial port as the product's own commands, test-run,
+and then confirmed or reverted. It knows no product. A product adds it to its build, as a git
+submodule or a west project, and enables it with `CONFIG_FUZ=y`.
 
 This file is for AI tools (and people) that open the repository without earlier context: how to
 work here, and where the rest is documented.
