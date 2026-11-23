@@ -44,6 +44,24 @@ typedef int (*fuz_write_fn)(const uint8_t *data, size_t len, void *user);
  */
 int fuz_init(fuz_write_fn write, void *user);
 
+/**
+ * @brief Pass one SMP frame from the product's serial port to fuz.
+ *
+ * Call it for each received frame, that is a line starting with 0x06 0x09 (first frame of an SMP
+ * packet) or 0x04 0x14 (continuation). fuz copies the frame, so @p data is only needed during the
+ * call. Does not block. The response, once the whole SMP packet has arrived, is written later
+ * through the fuz_write_fn given to fuz_init().
+ *
+ * @param data The frame, from its start bytes.
+ * @param len Number of bytes in @p data.
+ *
+ * @retval 0 The frame was accepted.
+ * @retval -EPERM fuz_init() has not been called.
+ * @retval -EINVAL @p data is not an SMP frame.
+ * @retval -ENOMEM No room for the frame; fuz is still handling earlier packets.
+ */
+int fuz_receive_smp_frame(const uint8_t *data, size_t len);
+
 #ifdef __cplusplus
 } // extern "C"
 #endif
