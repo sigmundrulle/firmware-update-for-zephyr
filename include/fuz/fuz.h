@@ -85,6 +85,56 @@ bool fuz_is_restart_requested(void);
  */
 int fuz_set_ready_for_restart(void);
 
+/**
+ * @brief Check whether the running image is confirmed.
+ *
+ * A confirmed image stays in slot 0 after a restart. An image that is not confirmed is being
+ * tested, and MCUboot swaps back to the previous image at the next restart.
+ *
+ * @return true if the running image is confirmed, false otherwise.
+ */
+bool fuz_is_confirmed(void);
+
+/**
+ * @brief Read the version of the running image (slot 0).
+ *
+ * @p version is left unchanged on failure.
+ *
+ * @param[out] version Filled in with the version from the image header.
+ *
+ * @retval 0 Success.
+ * @retval -EINVAL @p version is NULL.
+ * @retval -errno Other negative errno if the image header could not be read.
+ */
+int fuz_get_running_version(struct mcuboot_img_sem_ver *version);
+
+/**
+ * @brief Read the version of the image in slot 1.
+ *
+ * Slot 1 holds an update waiting to be swapped in, or, after a swap, the previous image.
+ * @p version is left unchanged on failure.
+ *
+ * @param[out] version Filled in with the version from the image header.
+ *
+ * @retval 0 Success.
+ * @retval -EINVAL @p version is NULL.
+ * @retval -ENOENT Slot 1 holds no valid image.
+ * @retval -errno Other negative errno if the image header could not be read.
+ */
+int fuz_get_secondary_version(struct mcuboot_img_sem_ver *version);
+
+/**
+ * @brief Check whether the image in slot 1 will be swapped in at the next restart.
+ *
+ * This is the case after the client has marked the image with SMP image test or confirm, until
+ * the restart.
+ *
+ * @retval 1 A swap is pending.
+ * @retval 0 No swap is pending.
+ * @retval -errno Negative errno if the slot 1 trailer could not be read.
+ */
+int fuz_is_secondary_pending(void);
+
 #ifdef __cplusplus
 } // extern "C"
 #endif
