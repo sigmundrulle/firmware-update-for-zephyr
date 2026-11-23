@@ -7,6 +7,74 @@ menuconfig FUZ
 
 if FUZ
 
+choice FUZ_CONFIRM
+	prompt "Who confirms a new image"
+	default FUZ_CONFIRM_BY_PRODUCT
+	help
+	  After an update, MCUboot runs the new image as a test. Unless the image is
+	  confirmed, MCUboot goes back to the previous image at the next restart. This
+	  chooses who confirms it.
+
+	  In the modes where the client confirms, MCUboot goes back if the client does not
+	  return: when CONFIG_FUZ_CONFIRM_TIMEOUT_MS has passed, or at the next restart if
+	  there is no time limit. The client rejects an image by restarting without
+	  confirming it, or with SMP image test on the previous image. SMP has no command
+	  to reject an image.
+
+	  The choice is made when the image is built, so the new image's setting applies
+	  while it is being tested.
+
+config FUZ_CONFIRM_AT_BOOT
+	bool "fuz, at startup"
+	help
+	  fuz confirms the running image when it starts, so an update is never reverted.
+	  For products without a self-test. fuz_confirm() and fuz_revert() return
+	  -EALREADY.
+
+config FUZ_CONFIRM_BY_PRODUCT
+	bool "Only the product"
+	help
+	  The product confirms with fuz_confirm() when its self-test has passed. The
+	  client's image state writes (SMP image test and image confirm) are rejected
+	  until the running image is confirmed, so the client cannot skip the self-test.
+
+config FUZ_CONFIRM_BY_CLIENT
+	bool "Only the client"
+	help
+	  The client confirms with SMP image confirm, and fuz_confirm() returns -EPERM.
+	  The product can still reject the image with fuz_revert().
+
+config FUZ_CONFIRM_BY_ANY
+	bool "The product or the client"
+	help
+	  Whichever comes first: the product with fuz_confirm() or the client with SMP
+	  image confirm. This is how Zephyr behaves without fuz.
+
+endchoice
+
+config FUZ_CONFIRM_TIMEOUT_MS
+	int "Time limit for confirming a new image (ms)"
+	default 0
+	range 0 2147483647
+	depends on !FUZ_CONFIRM_AT_BOOT
+	help
+	  If the running image is not confirmed within this time after startup, fuz
+	  restarts without confirming it, and MCUboot goes back to the previous image.
+	  Must be longer than the product's self-test.
+
+	  0 means no time limit: the image runs until the next restart. With
+	  CONFIG_FUZ_CONFIRM_BY_PRODUCT, the product cannot be updated until then, since
+	  image state writes are rejected.
+
+config FUZ_RESET_READY_TIMEOUT_MS
+	int "Time limit for the product to get ready for a restart (ms)"
+	default 5000
+	range 1 2147483647
+	help
+	  After the client's SMP os reset, the product has this long to call
+	  fuz_set_ready_for_restart(). If it does not, fuz answers the client with busy
+	  and does not restart.
+
 module = FUZ
 module-str = fuz
 source "subsys/logging/Kconfig.template.log_config"

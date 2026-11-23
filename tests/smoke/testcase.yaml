@@ -1,6 +1,22 @@
+common:
+  platform_allow:
+    - native_sim
+  integration_platforms:
+    - native_sim
 tests:
-  fuz.smoke:
-    platform_allow:
-      - native_sim
-    integration_platforms:
-      - native_sim
+  # Default Kconfig: CONFIG_FUZ_CONFIRM_BY_PRODUCT.
+  fuz.smoke: {}
+  # The other confirm modes and the time limits, so that each one is checked against Kconfig.
+  fuz.smoke.confirm_at_boot:
+    extra_configs:
+      - CONFIG_FUZ_CONFIRM_AT_BOOT=y
+  fuz.smoke.confirm_by_client:
+    extra_configs:
+      - CONFIG_FUZ_CONFIRM_BY_CLIENT=y
+  fuz.smoke.confirm_by_any:
+    extra_configs:
+      - CONFIG_FUZ_CONFIRM_BY_ANY=y
+  fuz.smoke.time_limits:
+    extra_configs:
+      - CONFIG_FUZ_CONFIRM_TIMEOUT_MS=60000
+      - CONFIG_FUZ_RESET_READY_TIMEOUT_MS=1000
