@@ -1,9 +1,9 @@
 # Project Overview
 
-`zephyr-fw-update` is a Zephyr module for firmware update over SMP (mcumgr) through MCUboot: a new
-image is received on the same serial port as the product's own commands, test-run, and then
-confirmed or reverted. It knows no product. A product adds it to its build, as a git submodule or a
-west project, and enables it with `CONFIG_FW_UPDATE=y`.
+`firmware-update-for-zephyr` is a Zephyr module for firmware update over SMP (mcumgr) through
+MCUboot: a new image is received on the same serial port as the product's own commands, test-run,
+and then confirmed or reverted. It knows no product. A product adds it to its build, as a git
+submodule or a west project, and enables it with `CONFIG_FUZ=y`.
 
 This file is for AI tools (and people) that open the repository without earlier context: how to
 work here, and where the rest is documented.
@@ -16,12 +16,12 @@ we work (branches, pull requests, review, commits, tests) is in
 ## Repository Structure
 
 - `zephyr/module.yml` – tells Zephyr where the module's CMake and Kconfig are (module name
-  `fw_update`).
-- `Kconfig` – `CONFIG_FW_UPDATE` and the module's log level.
+  `fuz`).
+- `Kconfig` – `CONFIG_FUZ` and the module's log level.
 - `CMakeLists.txt` – builds `src/` into the application and adds `include/` when
-  `CONFIG_FW_UPDATE=y`.
-- `include/fw_update/` – the public C API (`fw_update.h`, empty for now).
-- `src/` – the implementation (`fw_update.c`, only the log module for now).
+  `CONFIG_FUZ=y`.
+- `include/fuz/` – the public C API (`fuz.h`, empty for now).
+- `src/` – the implementation (`fuz.c`, only the log module for now).
 - `tests/` – Ztest apps, one folder each, run by Twister on `native_sim` (`tests/smoke/`).
 - `docs/` – setup in a product, development, contributing, and decisions.
 - `west.yml`, `tools/` – the west workspace for developing the module on its own; not used by a
@@ -58,7 +58,7 @@ build/smoke/zephyr/zephyr.exe
 
 `tools/env.sh` sets the environment for the module's own workspace (not used by a product):
 
-- `FW_UPDATE_ROOT` – the repository root.
+- `FUZ_ROOT` – the repository root.
 - `ZEPHYR_BASE` – `deps/zephyr`.
 - `ZEPHYR_TOOLCHAIN_VARIANT=host` – builds with the host's gcc (native_sim only).
 
@@ -74,8 +74,9 @@ Host packages: `git`, `cmake`, `python3` with `venv`, `gcc` and `gcc-multilib` (
 ## Code Style & Conventions
 
 - Language: C for the module; the header has `extern "C"` guards so C++ products can include it.
-- Names: module `fw_update`, Kconfig symbols `FW_UPDATE_*`, public headers under
-  `include/fw_update/`, log module `fw_update`.
+- Names: module `fuz` (Firmware Update for Zephyr), Kconfig symbols `FUZ_*`, public headers under
+  `include/fuz/`, C functions and types `fuz_*`, log module `fuz`. The repository is
+  `firmware-update-for-zephyr`.
 - Kconfig files are indented with tabs, as in Zephyr.
 - Commits: see `docs/contributing.md`.
 
@@ -87,14 +88,14 @@ Host packages: `git`, `cmake`, `python3` with `venv`, `gcc` and `gcc-multilib` (
 
 ```mermaid
 flowchart LR
-    P["Product's application"] -->|"CONFIG_FW_UPDATE=y"| Z["Product's Zephyr build"]
-    S["zephyr-fw-update (submodule or west project)"] -->|"zephyr/module.yml"| Z
-    Z --> L["libfw_update (src/, include/)"]
+    P["Product's application"] -->|"CONFIG_FUZ=y"| Z["Product's Zephyr build"]
+    S["firmware-update-for-zephyr (submodule or west project)"] -->|"zephyr/module.yml"| Z
+    Z --> L["libfuz (src/, include/)"]
 ```
 
 - The module has no Zephyr of its own. It is built with the product's Zephyr: Zephyr finds it
   through `zephyr/module.yml` (west project) or `ZEPHYR_EXTRA_MODULES` (submodule), reads `Kconfig`,
-  and builds `CMakeLists.txt` when `CONFIG_FW_UPDATE=y`.
+  and builds `CMakeLists.txt` when `CONFIG_FUZ=y`.
 - The repository's own `west.yml` (Zephyr v4.4.2, `mcuboot`, `zcbor`) exists only to build and test
   the module without a product.
 - Planned data flow (see the planned scope in `docs/decisions.md`): the product passes SMP frames
@@ -107,8 +108,8 @@ flowchart LR
 
 - Framework: Zephyr's Ztest, one app per folder in `tests/`, run by Twister on `native_sim` (Zephyr
   built as a Linux program) with the host's gcc. No board or Zephyr SDK is needed.
-- `tests/smoke/`: builds an app with `CONFIG_FW_UPDATE=y` and checks that the module is enabled. The
-  build fails if Zephyr does not find the module (`undefined symbol FW_UPDATE`).
+- `tests/smoke/`: builds an app with `CONFIG_FUZ=y` and checks that the module is enabled. The
+  build fails if Zephyr does not find the module (`undefined symbol FUZ`).
 - CI (`.github/workflows/ci.yml`): on every push, `tools/setup.sh`, then `west twister -T tests -p
   native_sim --outdir twister-out --inline-logs`; the report `twister-out/twister.xml` is uploaded
   as an artifact (kept 3 days).
@@ -150,8 +151,8 @@ What a product can set or connect to change how the module works.
 
 | Hook | Where | Effect |
 |---|---|---|
-| `CONFIG_FW_UPDATE` | `Kconfig` | Builds the module into the application |
-| `CONFIG_FW_UPDATE_LOG_LEVEL` | `Kconfig` (Zephyr's log template) | The module's log level |
+| `CONFIG_FUZ` | `Kconfig` | Builds the module into the application |
+| `CONFIG_FUZ_LOG_LEVEL` | `Kconfig` (Zephyr's log template) | The module's log level |
 | `ZEPHYR_EXTRA_MODULES` | The product's `CMakeLists.txt` | How a product finds the module as a git submodule |
 
 > TODO: the module's own Kconfig options and C API hooks, once designed.

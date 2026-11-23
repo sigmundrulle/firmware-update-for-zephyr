@@ -1,4 +1,4 @@
-name: fw_update
+name: fuz
 build:
   cmake: .
   kconfig: Kconfig

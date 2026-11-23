@@ -8,6 +8,7 @@ request as the change that makes or changes a decision.
 | Decision | Choice |
 |---|---|
 | Where the module lives | Its own repository from the start, not inside a product, so it can be delivered on its own |
+| Name | Repository `firmware-update-for-zephyr`; module `fuz` (Firmware Update for Zephyr), the prefix of its Kconfig options (`CONFIG_FUZ_*`), headers (`include/fuz/`), C API (`fuz_*`) and log module. Short, since it is typed in every symbol; the README says what it stands for, so it is not read as fuzz testing |
 | How a product gets it | A git submodule (with `ZEPHYR_EXTRA_MODULES`) or a west project; both are documented in [setup](setup.md) |
 | Zephyr | The module brings no Zephyr; it is built with the product's. Development uses Zephyr v4.4.2 |
 | Tests | Ztest on `native_sim` (32-bit, like the boards) with the host's gcc, run by Twister |
@@ -36,7 +37,7 @@ version.
 
 ## Open decisions
 
-- The C API: functions, types and their names.
+- The C API: functions and types (the prefix is `fuz_`).
 - Code style and `.clang-format`: Zephyr's style or another one.
 - The license (there is none yet).
 - Versions and tags: when a product-facing version is tagged.
