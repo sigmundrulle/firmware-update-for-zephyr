@@ -62,6 +62,29 @@ int fuz_init(fuz_write_fn write, void *user);
  */
 int fuz_receive_smp_frame(const uint8_t *data, size_t len);
 
+/**
+ * @brief Check whether the client has requested a restart (SMP os reset).
+ *
+ * Call it often, for example in every pass of the product's main loop. When it returns true, shut
+ * down in an orderly way and then call fuz_set_ready_for_restart().
+ *
+ * @return true if a restart has been requested, false otherwise.
+ */
+bool fuz_is_restart_requested(void);
+
+/**
+ * @brief Tell fuz that the product has shut down and may be restarted.
+ *
+ * fuz then lets mcumgr answer the client's os reset and restart shortly after. Keep the main loop
+ * running after this call until the restart, so that the answer can be written out through the
+ * fuz_write_fn. If the product does not call this within CONFIG_FUZ_RESET_READY_TIMEOUT_MS of the
+ * request, fuz answers the client with busy and does not restart.
+ *
+ * @retval 0 The restart may go ahead.
+ * @retval -ENOENT No restart has been requested, or the time limit has already passed.
+ */
+int fuz_set_ready_for_restart(void);
+
 #ifdef __cplusplus
 } // extern "C"
 #endif
