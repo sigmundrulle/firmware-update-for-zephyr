@@ -1,8 +1,7 @@
 /**
  * @file The fuz module's C API.
  *
- *       Firmware update over SMP (mcumgr) through MCUboot. The functions are not written yet; the
- *       header exists so that applications and tests can include it from the start.
+ * Firmware update over SMP (mcumgr) through MCUboot.
  */
 #pragma once
 
@@ -94,6 +93,31 @@ int fuz_set_ready_for_restart(void);
  * @return true if the running image is confirmed, false otherwise.
  */
 bool fuz_is_confirmed(void);
+
+/**
+ * @brief Confirm the running image, so that MCUboot keeps it after the next restart.
+ *
+ * Call it when the product's self-test after an update has passed. It also stops the
+ * CONFIG_FUZ_CONFIRM_TIMEOUT_MS time limit.
+ *
+ * @retval 0 Success.
+ * @retval -EALREADY The running image is already confirmed.
+ * @retval -EPERM CONFIG_FUZ_CONFIRM_BY_CLIENT is selected, so only the client may confirm.
+ * @retval -errno Other negative errno if the confirmation could not be written to flash.
+ */
+int fuz_confirm(void);
+
+/**
+ * @brief Reject the running image and restart, so that MCUboot goes back to the previous image.
+ *
+ * Call it when the product's self-test after an update has failed. Shut down in an orderly way
+ * first, as before fuz_set_ready_for_restart(). Allowed in every confirm mode.
+ *
+ * Does not return on success.
+ *
+ * @retval -EALREADY The running image is already confirmed, so there is nothing to go back to.
+ */
+int fuz_revert(void);
 
 /**
  * @brief Read the version of the running image (slot 0).
