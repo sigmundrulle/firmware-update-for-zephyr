@@ -51,5 +51,5 @@ Then run `west update`.
 * Zephyr v4.4.2 (the version the module is tested with).
 * The modules `mcuboot` and `zcbor` in the product's workspace.
 
-If the build stops with `attempt to assign the value 'y' to the undefined symbol FUZ`, Zephyr did not
-find the module: check the path in `ZEPHYR_EXTRA_MODULES`, or that `west update` has fetched it.
+If the build stops with `attempt to assign the value 'y' to the undefined symbol FUZ`, Zephyr did
+not find the module: check the path in `ZEPHYR_EXTRA_MODULES`, or that `west update` has fetched it.
