@@ -14,6 +14,12 @@ menuconfig FUZ
 	  Needs an application built with MCUboot (west build --sysbuild). MCUboot's RAM load
 	  mode is not supported: it has no test run, confirm or revert.
 
+# The client must not confirm the image in slot 1 before it has run (docs/decisions.md, Who confirms
+# a new image). Zephyr defaults this to y in every swap mode; modules are read before Zephyr's
+# subsys/, so this default wins. src/fuz.c stops the build if a product sets it to y.
+configdefault MCUMGR_GRP_IMG_ALLOW_CONFIRM_NON_ACTIVE_SLOT
+	default n if FUZ
+
 if FUZ
 
 choice FUZ_CONFIRM
