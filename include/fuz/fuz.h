@@ -47,9 +47,9 @@ int fuz_init(fuz_write_fn write, void *user);
  * @brief Pass one SMP frame from the product's serial port to fuz.
  *
  * Call it for each received frame, that is a line starting with 0x06 0x09 (first frame of an SMP
- * packet) or 0x04 0x14 (continuation). fuz copies the frame, so @p data is only needed during the
- * call. Does not block. The response, once the whole SMP packet has arrived, is written later
- * through the fuz_write_fn given to fuz_init().
+ * packet) or 0x04 0x14 (continuation); the newline at the end may be included or left out. fuz
+ * copies the frame, so @p data is only needed during the call. Does not block. The response, once
+ * the whole SMP packet has arrived, is written later through the fuz_write_fn given to fuz_init().
  *
  * @param data The frame, from its start bytes.
  * @param len Number of bytes in @p data.
