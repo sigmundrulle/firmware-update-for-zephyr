@@ -7,10 +7,17 @@
 #include <zephyr/dfu/mcuboot.h>
 #include <zephyr/logging/log.h>
 #include <zephyr/sys/util.h>
+#include <zephyr/toolchain.h>
 
 #include "fuz/fuz.h"
 
 LOG_MODULE_REGISTER(fuz, CONFIG_FUZ_LOG_LEVEL);
+
+/* The client must not confirm slot 1 before it has run (see docs/decisions.md and Kconfig). */
+BUILD_ASSERT(
+	!IS_ENABLED(CONFIG_MCUMGR_GRP_IMG_ALLOW_CONFIRM_NON_ACTIVE_SLOT),
+	"fuz: CONFIG_MCUMGR_GRP_IMG_ALLOW_CONFIRM_NON_ACTIVE_SLOT must be n, so that the client "
+	"cannot confirm an update before it has run");
 
 /* The product's write function and its pointer, from fuz_init(); NULL until then. */
 static fuz_write_fn fuz_write;

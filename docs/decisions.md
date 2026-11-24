@@ -15,6 +15,8 @@ request as the change that makes or changes a decision.
 | Tests | Ztest on `native_sim` (32-bit, like the boards) with the host's gcc, run by Twister |
 | Language of the tracked files in the repository | English, since the module goes to other customers |
 | Visibility and review | Public repository; `main` only through approved pull requests |
+| Who confirms a new image | A Kconfig choice (#10): `CONFIG_FUZ_CONFIRM_BY_PRODUCT` (default: the product with `fuz_confirm()` after its self-test; the client's image state writes are rejected until then), `CONFIG_FUZ_CONFIRM_BY_CLIENT` (SMP image confirm; `fuz_confirm()` returns `-EPERM`), `CONFIG_FUZ_CONFIRM_BY_ANY` (whichever comes first) or `CONFIG_FUZ_CONFIRM_AT_BOOT` (fuz confirms at startup, so an update is never reverted). The product can reject an image that is not confirmed yet with `fuz_revert()`, in every mode; with `CONFIG_FUZ_CONFIRM_AT_BOOT` the image is confirmed at startup, so `fuz_revert()` returns `-EALREADY`. The client never confirms slot 1 without running it first. Both the product and the client: not yet, it needs fuz to remember who has confirmed |
+| Time limits | `CONFIG_FUZ_CONFIRM_TIMEOUT_MS` (default 0, no limit): an image not confirmed in time is not kept, fuz restarts and MCUboot reverts; not with `CONFIG_FUZ_CONFIRM_AT_BOOT`. `CONFIG_FUZ_RESET_READY_TIMEOUT_MS` (default 5000): the product's time to call `fuz_set_ready_for_restart()` after an SMP os reset, otherwise the client gets busy and there is no restart |
 
 ## Planned scope (agreed, not implemented)
 
@@ -28,7 +30,7 @@ and talks to the module through the C API.
 | A reset hook with a handshake: "restart requested", then "app ready", with a time limit | An orderly shutdown before the restart, then "ready" |
 | Checking that a received image is for the right board (board target in a TLV), erasing it if not | – |
 | Kconfig defaults for mcumgr (progressive erase, hash, size checks) | – |
-| Confirm or reset based on the self-test result the product reports; rejecting confirm while the self-test runs | The self-test, and reporting its result |
+| Confirm or revert as chosen in Kconfig (see *Who confirms a new image*): after the self-test result the product reports, by the client, or at startup; rejecting the client's confirm while the product's self-test runs; restarting without confirm after a time limit | The self-test, and reporting its result |
 | Reading MCUboot's state: running version, confirmed or not, the image in the second slot | Showing it, if the product wants to |
 
 MCUboot runs in **swap using offset** on products where the image fits in the internal flash. The new image
