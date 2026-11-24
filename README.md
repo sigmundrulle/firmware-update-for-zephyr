@@ -16,9 +16,9 @@ it to its build and enables it with `CONFIG_FUZ=y`.
 
 ## Status
 
-**Skeleton.** The build integration, a smoke test, CI and the documentation exist. The C API is being
-designed, so `include/fuz/fuz.h` declares no functions and `src/fuz.c` only registers the
-log module. Nothing is usable by a product yet.
+**Skeleton.** The build integration, a smoke test, CI and the documentation exist. The C API is
+declared in `include/fuz/fuz.h` but not implemented yet: `src/fuz.c` only registers the log
+module. Nothing is usable by a product yet.
 
 ## Architecture
 
