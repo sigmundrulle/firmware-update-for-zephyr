@@ -20,7 +20,7 @@ we work (branches, pull requests, review, commits, tests) is in
 - `Kconfig` – `CONFIG_FUZ` and the module's log level.
 - `CMakeLists.txt` – builds `src/` into the application and adds `include/` when
   `CONFIG_FUZ=y`.
-- `include/fuz/` – the public C API (`fuz.h`, empty for now).
+- `include/fuz/` – the public C API (`fuz.h`).
 - `src/` – the implementation (`fuz.c`, only the log module for now).
 - `tests/` – Ztest apps, one folder each, run by Twister on `native_sim` (`tests/smoke/`).
 - `docs/` – setup in a product, development, contributing, and decisions.
@@ -82,7 +82,12 @@ Host packages: `git`, `cmake`, `python3` with `venv`, `gcc` and `gcc-multilib` (
 
 > TODO: formatting rules and the `.clang-format` (see the open decisions in `docs/decisions.md`).
 
-> TODO: naming rules for the C API's functions and types.
+- The C API (`include/fuz/fuz.h`): functions usually return 0 or a negative errno. Two kinds of
+  functions return something else: `bool` for yes/no answers that cannot fail, and `int` with 1, 0
+  or a negative errno for reads that can. Doc comments in Zephyr's style: `@retval` for each value
+  a function returns, `@return` for a one-sentence answer (a `bool`, or a callback whose errno the
+  product chooses), `@param[out]` for out-parameters, `@p` for a parameter in the text; `(void)`
+  for functions without arguments.
 
 ## Architecture Notes
 
