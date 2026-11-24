@@ -82,7 +82,7 @@ Host packages: `git`, `cmake`, `python3` with `venv`, `gcc` and `gcc-multilib` (
 
 > TODO: formatting rules and the `.clang-format` (see the open decisions in `docs/decisions.md`).
 
-- The C API (`include/fuz/fuz.h`): functions return 0 or a negative errno; `bool` for yes/no answers
+- The C API (`include/fuz/fuz.h`): functions typically return 0 or a negative errno. but in some cases these alternatives are used: `bool` for yes/no answers
   that cannot fail, `int` with 1, 0 or a negative errno for reads that can. Doc comments in Zephyr's
   style: `@retval` for each value a function returns, `@return` for a one-sentence answer (a `bool`,
   or a callback whose errno the product chooses), `@param[out]` for out-parameters, `@p` for a
