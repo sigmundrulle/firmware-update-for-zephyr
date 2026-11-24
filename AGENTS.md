@@ -22,7 +22,7 @@ we work (branches, pull requests, review, commits, tests) is in
   `CONFIG_FUZ=y`.
 - `include/fuz/` – the public C API (`fuz.h`).
 - `src/` – the implementation (`fuz.c`, only the log module for now).
-- `tests/` – Ztest apps, one folder each, run by Twister on `native_sim` (`tests/smoke/`).
+- `tests/` – Ztest apps, one folder each, run by Twister on `native_sim` (`tests/api/`).
 - `docs/` – setup in a product, development, contributing, and decisions.
 - `west.yml`, `tools/` – the west workspace for developing the module on its own; not used by a
   product.
@@ -52,8 +52,8 @@ Build and run one test app by hand (it writes native_sim's simulated flash to `f
 ignored):
 
 ```bash
-west build -p always -b native_sim -s tests/smoke -d build/smoke
-build/smoke/zephyr/zephyr.exe
+west build -p always -b native_sim -s tests/api -d build/api
+build/api/zephyr/zephyr.exe
 ```
 
 `tools/env.sh` sets the environment for the module's own workspace (not used by a product):
@@ -113,8 +113,12 @@ flowchart LR
 
 - Framework: Zephyr's Ztest, one app per folder in `tests/`, run by Twister on `native_sim` (Zephyr
   built as a Linux program) with the host's gcc. No board or Zephyr SDK is needed.
-- `tests/smoke/`: builds an app with `CONFIG_FUZ=y` and checks that the module is enabled. The
-  build fails if Zephyr does not find the module (`undefined symbol FUZ`).
+- `tests/api/`: the C API on `native_sim`, once per confirm mode (`testcase.yaml`). The MCUboot
+  functions fuz calls are FFF fakes (`src/fakes.h`, `src/fakes.c`), reset before every test by a
+  `ZTEST_RULE` in `src/fakes.c`; one file and one test suite
+  per area (`src/test_api.c`, `src/test_confirm.c`). A function not implemented yet is checked in
+  `test_stubs`; when it is implemented, its line goes and it gets a test of its own. The build
+  fails if Zephyr does not find the module (`undefined symbol FUZ`).
 - CI (`.github/workflows/ci.yml`): on every push, `tools/setup.sh`, then `west twister -T tests -p
   native_sim --outdir twister-out --inline-logs`; the report `twister-out/twister.xml` is uploaded
   as an artifact (kept 3 days).

@@ -16,9 +16,10 @@ it to its build and enables it with `CONFIG_FUZ=y`.
 
 ## Status
 
-**Skeleton.** The build integration, a smoke test, CI and the documentation exist. The C API is
-declared in `include/fuz/fuz.h` but not implemented yet: `src/fuz.c` only registers the log
-module. Nothing is usable by a product yet.
+**Skeleton.** The build integration, tests of the C API, CI and the documentation exist. The C
+API is declared in `include/fuz/fuz.h`; `src/fuz.c` implements `fuz_init()`, `fuz_is_confirmed()`
+and `fuz_confirm()`, and the other functions answer "not supported" for now. Nothing is usable by
+a product yet.
 
 ## Architecture
 
