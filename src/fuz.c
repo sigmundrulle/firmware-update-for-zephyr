@@ -60,8 +60,25 @@ bool fuz_is_confirmed(void)
 
 int fuz_confirm(void)
 {
-	/* Not implemented yet: confirm according to CONFIG_FUZ_CONFIRM_*. */
-	return -ENOTSUP;
+	int rc;
+
+	if (IS_ENABLED(CONFIG_FUZ_CONFIRM_BY_CLIENT)) {
+		return -EPERM;
+	}
+
+	if (fuz_is_confirmed()) {
+		return -EALREADY;
+	}
+	/* Not implemented yet: stopping the CONFIG_FUZ_CONFIRM_TIMEOUT_MS time limit. */
+	rc = boot_write_img_confirmed();
+	if (rc != 0) {
+		LOG_ERR("Could not confirm the running image: %d", rc);
+		return rc;
+	}
+
+	LOG_INF("Running image confirmed");
+
+	return 0;
 }
 
 int fuz_revert(void)
