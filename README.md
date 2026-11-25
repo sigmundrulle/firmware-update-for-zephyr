@@ -16,10 +16,10 @@ it to its build and enables it with `CONFIG_FUZ=y`.
 
 ## Status
 
-**Skeleton.** The build integration, tests of the C API, CI and the documentation exist. The C
-API is declared in `include/fuz/fuz.h`; `src/fuz.c` implements `fuz_init()`, `fuz_is_confirmed()`
-and `fuz_confirm()`, and the other functions answer "not supported" for now. Nothing is usable by
-a product yet.
+**Early.** The C API is declared in `include/fuz/fuz.h`, and the Kconfig options for who confirms a
+new image and the time limits exist. Implemented: `fuz_init()`, `fuz_is_confirmed()` and
+`fuz_confirm()`, and the client cannot confirm an update before it has run. The other functions
+return "not implemented", so the module cannot update a product yet.
 
 ## Architecture
 
@@ -44,3 +44,4 @@ west project, and `zephyr/module.yml` does the rest.
 * [Development](docs/development.md): building and testing the module on its own
 * [Contributing](docs/contributing.md): branches, pull requests, review, commits and tests
 * [Decisions](docs/decisions.md): decisions so far, planned scope and open decisions
+* [SMP buffer size](docs/smp-buffer.md): how the buffer size affects upload time, RAM and the serial port

@@ -14,6 +14,7 @@ request as the change that makes or changes a decision.
 | Zephyr | The module brings no Zephyr; it is built with the product's. Development uses Zephyr v4.4.2 |
 | Tests | Ztest on `native_sim` (32-bit, like the boards) with the host's gcc, run by Twister |
 | Language of the tracked files in the repository | English, since the module goes to other customers |
+| Code style | Zephyr's: `.clang-format` copied unchanged from Zephyr v4.4.2, clang-format pinned in `tools/clang-format/version.txt` and checked in CI. The module builds on Zephyr and mcumgr, which use the same style |
 | Visibility and review | Public repository; `main` only through approved pull requests |
 | Who confirms a new image | A Kconfig choice (#10): `CONFIG_FUZ_CONFIRM_BY_PRODUCT` (default: the product with `fuz_confirm()` after its self-test; the client's image state writes are rejected until then), `CONFIG_FUZ_CONFIRM_BY_CLIENT` (SMP image confirm; `fuz_confirm()` returns `-EPERM`), `CONFIG_FUZ_CONFIRM_BY_ANY` (whichever comes first) or `CONFIG_FUZ_CONFIRM_AT_BOOT` (fuz confirms at startup, so an update is never reverted). The product can reject an image that is not confirmed yet with `fuz_revert()`, in every mode; with `CONFIG_FUZ_CONFIRM_AT_BOOT` the image is confirmed at startup, so `fuz_revert()` returns `-EALREADY`. The client never confirms slot 1 without running it first. Both the product and the client: not yet, it needs fuz to remember who has confirmed |
 | Time limits | `CONFIG_FUZ_CONFIRM_TIMEOUT_MS` (default 0, no limit): an image not confirmed in time is not kept, fuz restarts and MCUboot reverts; not with `CONFIG_FUZ_CONFIRM_AT_BOOT`. `CONFIG_FUZ_RESET_READY_TIMEOUT_MS` (default 5000): the product's time to call `fuz_set_ready_for_restart()` after an SMP os reset, otherwise the client gets busy and there is no restart |
@@ -40,7 +41,6 @@ version.
 
 ## Open decisions
 
-- Code style and `.clang-format`: Zephyr's style or another one.
 - The license (there is none yet).
 - Versions and tags: when a product-facing version is tagged.
 - The word *test* (MCUboot's and mcumgr's) or *trial* for the state between swap and confirm.
