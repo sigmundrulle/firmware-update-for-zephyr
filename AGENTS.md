@@ -115,10 +115,10 @@ flowchart LR
   built as a Linux program) with the host's gcc. No board or Zephyr SDK is needed.
 - `tests/api/`: the C API on `native_sim`, once per confirm mode (`testcase.yaml`). The MCUboot
   functions fuz calls are FFF fakes (`src/fakes.h`, `src/fakes.c`), reset before every test by a
-  `ZTEST_RULE` in `src/fakes.c`; one file and one test suite
-  per area (`src/test_api.c`, `src/test_confirm.c`). A function not implemented yet is checked in
-  `test_stubs`; when it is implemented, its line goes and it gets a test of its own. The build
-  fails if Zephyr does not find the module (`undefined symbol FUZ`).
+  `ZTEST_RULE` in `src/fakes.c`; one file and one test suite per area (`src/test_api.c`,
+  `src/test_confirm.c`). A function not implemented yet is checked in `test_stubs`; when it is
+  implemented, its line goes and it gets a test of its own. The build fails if Zephyr does not
+  find the module (`undefined symbol FUZ`).
 - CI (`.github/workflows/ci.yml`): on every push, `tools/setup.sh`, then `west twister -T tests -p
   native_sim --outdir twister-out --inline-logs`; the report `twister-out/twister.xml` is uploaded
   as an artifact (kept 3 days).

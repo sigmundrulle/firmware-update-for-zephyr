@@ -1,5 +1,5 @@
 # Ztest: fuz's C API on native_sim, with FFF fakes of the MCUboot functions it calls (run with
-# Twister, see README.md). One file per area of the API, one test suite per file.
+# Twister, see docs/development.md). One file per area of the API, one test suite per file.
 
 cmake_minimum_required(VERSION 3.20.0)
 
