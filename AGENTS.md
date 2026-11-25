@@ -110,7 +110,8 @@ flowchart LR
   slot and has MCUboot test-run it after a restart; the product reports its self-test result, and
   the module confirms the image or resets so that MCUboot reverts it. Implemented so far: the
   setup (`fuz_init()`), reading whether the image is confirmed, confirming it (`fuz_confirm()`),
-  and the Kconfig default that stops the client from confirming slot 1 before it has run.
+  confirming it at startup (`CONFIG_FUZ_CONFIRM_AT_BOOT`, a `SYS_INIT` in `src/fuz.c`), and the
+  Kconfig default that stops the client from confirming slot 1 before it has run.
 
 ## Testing Strategy
 
@@ -119,7 +120,8 @@ flowchart LR
 - `tests/api/`: the C API on `native_sim`, once per confirm mode and with the time limits set
   (`testcase.yaml`), so each Kconfig combination builds. The MCUboot functions fuz calls are FFF
   fakes (`src/fakes.h`, `src/fakes.c`; native_sim has no MCUboot), reset before every test by a
-  `ZTEST_RULE` in `src/fakes.c`; one file and one test suite per area (`src/test_api.c`,
+  `ZTEST_RULE` in `src/fakes.c` (the calls fuz made at startup are saved there first, in
+  `startup_*_calls`); one file and one test suite per area (`src/test_api.c`,
   `src/test_confirm.c`). A function not implemented yet is checked in `test_stubs`; when it is
   implemented, its line goes and it gets a test of its own. The build fails if Zephyr does not
   find the module (`undefined symbol FUZ`).
