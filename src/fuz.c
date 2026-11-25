@@ -67,8 +67,33 @@ bool fuz_is_confirmed(void)
 
 int fuz_confirm(void)
 {
-	/* Not implemented yet: confirm according to CONFIG_FUZ_CONFIRM_*. */
-	return -ENOTSUP;
+	int rc;
+
+	if (IS_ENABLED(CONFIG_FUZ_CONFIRM_BY_CLIENT)) {
+		return -EPERM;
+	}
+
+	/*
+	 * Not implemented yet: with CONFIG_FUZ_CONFIRM_AT_BOOT, fuz confirms at startup, so this
+	 * returns -EALREADY below. Until then, this confirms as with CONFIG_FUZ_CONFIRM_BY_PRODUCT.
+	 */
+	if (fuz_is_confirmed()) {
+		return -EALREADY;
+	}
+
+	rc = boot_write_img_confirmed();
+	if (rc != 0) {
+		LOG_ERR("Could not confirm the running image: %d", rc);
+		return rc;
+	}
+
+	/*
+	 * Not implemented yet: stopping the CONFIG_FUZ_CONFIRM_TIMEOUT_MS time limit. Only after a
+	 * successful write, so that MCUboot still goes back if the write failed.
+	 */
+	LOG_INF("Running image confirmed");
+
+	return 0;
 }
 
 int fuz_revert(void)

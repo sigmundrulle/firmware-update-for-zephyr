@@ -22,9 +22,9 @@ we work (branches, pull requests, review, commits, tests) is in
 - `CMakeLists.txt` – builds `src/` into the application and adds `include/` when
   `CONFIG_FUZ=y`.
 - `include/fuz/` – the public C API (`fuz.h`).
-- `src/` – the implementation (`fuz.c`: `fuz_init()` and `fuz_is_confirmed()`; the other functions
-  return "not implemented" for now).
-- `tests/` – Ztest apps, one folder each, run by Twister on `native_sim` (`tests/smoke/`).
+- `src/` – the implementation (`fuz.c`: `fuz_init()`, `fuz_is_confirmed()` and `fuz_confirm()`;
+  the other functions return "not implemented" for now).
+- `tests/` – Ztest apps, one folder each, run by Twister on `native_sim` (`tests/api/`).
 - `docs/` – setup in a product, development, contributing, decisions, and choosing the SMP buffer
   size.
 - `west.yml`, `tools/` – the west workspace for developing the module on its own; not used by a
@@ -55,8 +55,8 @@ Build and run one test app by hand (it writes native_sim's simulated flash to `f
 ignored):
 
 ```bash
-west build -p always -b native_sim -s tests/smoke -d build/smoke
-build/smoke/zephyr/zephyr.exe
+west build -p always -b native_sim -s tests/api -d build/api
+build/api/zephyr/zephyr.exe
 ```
 
 `tools/env.sh` sets the environment for the module's own workspace (not used by a product):
@@ -109,17 +109,20 @@ flowchart LR
   from its serial port to the module; the module receives the image through mcumgr into the second
   slot and has MCUboot test-run it after a restart; the product reports its self-test result, and
   the module confirms the image or resets so that MCUboot reverts it. Implemented so far: the
-  setup (`fuz_init()`), reading whether the image is confirmed, and the Kconfig default that stops
-  the client from confirming slot 1 before it has run.
+  setup (`fuz_init()`), reading whether the image is confirmed, confirming it (`fuz_confirm()`),
+  and the Kconfig default that stops the client from confirming slot 1 before it has run.
 
 ## Testing Strategy
 
 - Framework: Zephyr's Ztest, one app per folder in `tests/`, run by Twister on `native_sim` (Zephyr
   built as a Linux program) with the host's gcc. No board or Zephyr SDK is needed.
-- `tests/smoke/`: builds an app with `CONFIG_FUZ=y` and calls every function of the C API, with
-  an FFF fake of `boot_is_img_confirmed()` (native_sim has no MCUboot). `testcase.yaml` runs it
-  once per confirm mode and with the time limits set, so each Kconfig combination builds. The
-  build fails if Zephyr does not find the module (`undefined symbol FUZ`).
+- `tests/api/`: the C API on `native_sim`, once per confirm mode and with the time limits set
+  (`testcase.yaml`), so each Kconfig combination builds. The MCUboot functions fuz calls are FFF
+  fakes (`src/fakes.h`, `src/fakes.c`; native_sim has no MCUboot), reset before every test by a
+  `ZTEST_RULE` in `src/fakes.c`; one file and one test suite per area (`src/test_api.c`,
+  `src/test_confirm.c`). A function not implemented yet is checked in `test_stubs`; when it is
+  implemented, its line goes and it gets a test of its own. The build fails if Zephyr does not
+  find the module (`undefined symbol FUZ`).
 - CI (`.github/workflows/ci.yml`), on every push, two jobs: `format-check` runs
   `tools/clang-format/check.sh`; `tests` runs `tools/setup.sh`, then `west twister -T tests -p
   native_sim --outdir twister-out --inline-logs`, and uploads the report `twister-out/twister.xml`
