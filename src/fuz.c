@@ -7,6 +7,7 @@
 #include <zephyr/dfu/mcuboot.h>
 #include <zephyr/init.h>
 #include <zephyr/logging/log.h>
+#include <zephyr/sys/reboot.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/toolchain.h>
 
@@ -124,8 +125,16 @@ int fuz_confirm(void)
 
 int fuz_revert(void)
 {
-	/* Not implemented yet: restart without confirm. Returns, as on any failure. */
-	return -ENOTSUP;
+	if (fuz_is_confirmed()) {
+		return -EALREADY;
+	}
+
+	LOG_INF("Restarting without confirming, MCUboot goes back to the previous image");
+
+	sys_reboot(SYS_REBOOT_WARM);
+
+	/* sys_reboot() does not return on a board; only reached if the restart did not happen. */
+	return -EIO;
 }
 
 int fuz_get_running_version(struct mcuboot_img_sem_ver *version)

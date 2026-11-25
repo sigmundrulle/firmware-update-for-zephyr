@@ -116,6 +116,7 @@ int fuz_confirm(void);
  * Does not return on success.
  *
  * @retval -EALREADY The running image is already confirmed, so there is nothing to go back to.
+ * @retval -EIO The restart did not happen.
  */
 int fuz_revert(void);
 
