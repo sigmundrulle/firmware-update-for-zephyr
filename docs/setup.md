@@ -50,6 +50,10 @@ Then run `west update`.
 
 * Zephyr v4.4.2 (the version the module is tested with).
 * The modules `mcuboot` and `zcbor` in the product's workspace.
+* An application built with MCUboot (`west build --sysbuild`). MCUboot's RAM load mode is not
+  supported: it has no test run, confirm or revert.
+* `CONFIG_MCUMGR_GRP_IMG_ALLOW_CONFIRM_NON_ACTIVE_SLOT` left at fuz's default, `n`, so that a client
+  cannot confirm an update before it has run. The build stops if the product sets it to `y`.
 
 If the build stops with `attempt to assign the value 'y' to the undefined symbol FUZ`, Zephyr did
 not find the module: check the path in `ZEPHYR_EXTRA_MODULES`, or that `west update` has fetched it.
