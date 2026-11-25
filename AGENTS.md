@@ -17,13 +17,16 @@ we work (branches, pull requests, review, commits, tests) is in
 
 - `zephyr/module.yml` – tells Zephyr where the module's CMake and Kconfig are (module name
   `fuz`).
-- `Kconfig` – `CONFIG_FUZ` and the module's log level.
+- `Kconfig` – `CONFIG_FUZ`, who confirms a new image, the time limits and the module's log level,
+  and fuz's default for an mcumgr option.
 - `CMakeLists.txt` – builds `src/` into the application and adds `include/` when
   `CONFIG_FUZ=y`.
 - `include/fuz/` – the public C API (`fuz.h`).
-- `src/` – the implementation (`fuz.c`, only the log module for now).
+- `src/` – the implementation (`fuz.c`: `fuz_init()` and `fuz_is_confirmed()`; the other functions
+  return "not implemented" for now).
 - `tests/` – Ztest apps, one folder each, run by Twister on `native_sim` (`tests/smoke/`).
-- `docs/` – setup in a product, development, contributing, and decisions.
+- `docs/` – setup in a product, development, contributing, decisions, and choosing the SMP buffer
+  size.
 - `west.yml`, `tools/` – the west workspace for developing the module on its own; not used by a
   product.
 - `.github/workflows/` – CI.
@@ -65,7 +68,7 @@ build/smoke/zephyr/zephyr.exe
 Host packages: `git`, `cmake`, `python3` with `venv`, `gcc` and `gcc-multilib` (native_sim is
 32-bit). CI also installs `ninja-build`, `gperf` and `device-tree-compiler`.
 
-> TODO: lint and format commands (no `.clang-format` or format check yet).
+Format the C code before committing with `tools/clang-format/fix.sh` (see `docs/development.md`).
 
 > TODO: building for real boards (needs the Zephyr SDK; `tools/env.sh` uses the host's gcc only).
 
@@ -78,9 +81,8 @@ Host packages: `git`, `cmake`, `python3` with `venv`, `gcc` and `gcc-multilib` (
   `include/fuz/`, C functions and types `fuz_*`, log module `fuz`. The repository is
   `firmware-update-for-zephyr`.
 - Kconfig files are indented with tabs, as in Zephyr.
+- C code: Zephyr's style, from `.clang-format` (a copy of Zephyr v4.4.2's), checked in CI.
 - Commits: see `docs/contributing.md`.
-
-> TODO: formatting rules and the `.clang-format` (see the open decisions in `docs/decisions.md`).
 
 - The C API (`include/fuz/fuz.h`): functions usually return 0 or a negative errno. Two kinds of
   functions return something else: `bool` for yes/no answers that cannot fail, and `int` with 1, 0
@@ -106,17 +108,21 @@ flowchart LR
 - Planned data flow (see the planned scope in `docs/decisions.md`): the product passes SMP frames
   from its serial port to the module; the module receives the image through mcumgr into the second
   slot and has MCUboot test-run it after a restart; the product reports its self-test result, and
-  the module confirms the image or resets so that MCUboot reverts it. None of this is implemented
-  yet.
+  the module confirms the image or resets so that MCUboot reverts it. Implemented so far: the
+  setup (`fuz_init()`), reading whether the image is confirmed, and the Kconfig default that stops
+  the client from confirming slot 1 before it has run.
 
 ## Testing Strategy
 
 - Framework: Zephyr's Ztest, one app per folder in `tests/`, run by Twister on `native_sim` (Zephyr
   built as a Linux program) with the host's gcc. No board or Zephyr SDK is needed.
-- `tests/smoke/`: builds an app with `CONFIG_FUZ=y` and checks that the module is enabled. The
+- `tests/smoke/`: builds an app with `CONFIG_FUZ=y` and calls every function of the C API, with
+  an FFF fake of `boot_is_img_confirmed()` (native_sim has no MCUboot). `testcase.yaml` runs it
+  once per confirm mode and with the time limits set, so each Kconfig combination builds. The
   build fails if Zephyr does not find the module (`undefined symbol FUZ`).
-- CI (`.github/workflows/ci.yml`): on every push, `tools/setup.sh`, then `west twister -T tests -p
-  native_sim --outdir twister-out --inline-logs`; the report `twister-out/twister.xml` is uploaded
+- CI (`.github/workflows/ci.yml`), on every push, two jobs: `format-check` runs
+  `tools/clang-format/check.sh`; `tests` runs `tools/setup.sh`, then `west twister -T tests -p
+  native_sim --outdir twister-out --inline-logs`, and uploads the report `twister-out/twister.xml`
   as an artifact (kept 3 days).
 - Which changes need tests, and when to run them: see `docs/contributing.md`.
 
@@ -172,3 +178,4 @@ What a product can set or connect to change how the module works.
 - [docs/development.md](docs/development.md) – building and testing the module on its own.
 - [docs/contributing.md](docs/contributing.md) – branches, pull requests, review, commits and tests.
 - [docs/decisions.md](docs/decisions.md) – decisions so far, planned scope and open decisions.
+- [docs/smp-buffer.md](docs/smp-buffer.md) – choosing the SMP buffer size.
