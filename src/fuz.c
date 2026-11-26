@@ -175,7 +175,10 @@ int fuz_is_secondary_pending(void)
 	case BOOT_SWAP_TYPE_PERM:
 		return 1;
 	case BOOT_SWAP_TYPE_NONE:
-	/* The previous image comes back; nothing new waits, as with SMP's pending flag. */
+	/*
+	 * The previous image comes back, nothing new waits: smpmgr image state-read does not
+	 * show slot 1 as pending either.
+	 */
 	case BOOT_SWAP_TYPE_REVERT:
 		return 0;
 	default:
