@@ -5,6 +5,7 @@
 #include <stdbool.h>
 
 #include <zephyr/dfu/mcuboot.h>
+#include <zephyr/init.h>
 #include <zephyr/logging/log.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/toolchain.h>
@@ -65,6 +66,31 @@ bool fuz_is_confirmed(void)
 	return boot_is_img_confirmed();
 }
 
+#if defined(CONFIG_FUZ_CONFIRM_AT_BOOT)
+
+static int fuz_confirm_at_boot(void)
+{
+	int rc;
+
+	if (fuz_is_confirmed()) {
+		return 0;
+	}
+
+	rc = boot_write_img_confirmed();
+	if (rc != 0) {
+		LOG_ERR("Could not confirm the running image: %d", rc);
+		return rc;
+	}
+
+	LOG_INF("Running image confirmed");
+
+	return 0;
+}
+
+SYS_INIT(fuz_confirm_at_boot, APPLICATION, CONFIG_APPLICATION_INIT_PRIORITY);
+
+#endif /* CONFIG_FUZ_CONFIRM_AT_BOOT */
+
 int fuz_confirm(void)
 {
 	int rc;
@@ -74,8 +100,8 @@ int fuz_confirm(void)
 	}
 
 	/*
-	 * Not implemented yet: with CONFIG_FUZ_CONFIRM_AT_BOOT, fuz confirms at startup, so this
-	 * returns -EALREADY below. Until then, this confirms as with CONFIG_FUZ_CONFIRM_BY_PRODUCT.
+	 * With CONFIG_FUZ_CONFIRM_AT_BOOT, fuz_confirm_at_boot() has confirmed already, so this
+	 * returns -EALREADY; if that write failed, this tries again.
 	 */
 	if (fuz_is_confirmed()) {
 		return -EALREADY;
