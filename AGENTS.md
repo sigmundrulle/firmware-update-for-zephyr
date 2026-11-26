@@ -170,7 +170,7 @@ What a product can set or connect to change how the module works.
 | Hook | Where | Effect |
 |---|---|---|
 | `CONFIG_FUZ` | `Kconfig` | Builds the module into the application |
-| `CONFIG_FUZ_LOG_LEVEL` | `Kconfig` (Zephyr's log template) | The module's log level |
+| `CONFIG_FUZ_LOG_LEVEL` | `Kconfig` (Zephyr's log template) | The module's log level; *Default* follows `CONFIG_LOG_DEFAULT_LEVEL` (see `docs/setup.md`) |
 | `CONFIG_FUZ_CONFIRM_AT_BOOT`, `_BY_PRODUCT`, `_BY_CLIENT`, `_BY_ANY` | `Kconfig` (a choice) | Who confirms a new image (see `docs/decisions.md`) |
 | `CONFIG_FUZ_CONFIRM_TIMEOUT_MS` | `Kconfig` | Restart without confirm, so MCUboot reverts, if nothing confirms in time |
 | `CONFIG_FUZ_RESET_READY_TIMEOUT_MS` | `Kconfig` | The product's time to get ready for a restart |

@@ -95,4 +95,14 @@ module = FUZ
 module-str = fuz
 source "subsys/logging/Kconfig.template.log_config"
 
+# Zephyr's log template gives the menu no help; this adds it to the same choice.
+choice FUZ_LOG_LEVEL_CHOICE
+	help
+	  The most detailed fuz log messages built into the image; more detailed ones
+	  are left out and cost no flash. Default follows Zephyr's LOG_DEFAULT_LEVEL,
+	  which is 3 (Info) unless the product sets it: errors, warnings and info are
+	  built in, debug is not. Choose a level here to set fuz alone, for example
+	  Debug (CONFIG_FUZ_LOG_LEVEL_DBG=y in prj.conf).
+endchoice
+
 endif # FUZ
