@@ -67,6 +67,10 @@ int fuz_receive_smp_frame(const uint8_t *data, size_t len);
  * Call it often, for example in every pass of the product's main loop. When it returns true, shut
  * down in an orderly way and then call fuz_set_ready_for_restart().
  *
+ * It returns false again if the product does not call fuz_set_ready_for_restart() within
+ * CONFIG_FUZ_RESET_READY_TIMEOUT_MS: from the moment fuz answers the client with busy, there is no
+ * restart. The product should then resume normal operation.
+ *
  * @return true if a restart has been requested, false otherwise.
  */
 bool fuz_is_restart_requested(void);
@@ -78,6 +82,11 @@ bool fuz_is_restart_requested(void);
  * running after this call until the restart, so that the answer can be written out through the
  * fuz_write_fn. If the product does not call this within CONFIG_FUZ_RESET_READY_TIMEOUT_MS of the
  * request, fuz answers the client with busy and does not restart.
+ *
+ * The call sets a state, "shut down and ready", and is not tied to a particular request: it
+ * applies to the request active when it is made. If an earlier request timed out and the client
+ * has sent a new one, a late call restarts for the new one. Without an active request, nothing is
+ * kept for a later one.
  *
  * @retval 0 The restart may go ahead.
  * @retval -ENOENT No restart has been requested, or the time limit has already passed.
