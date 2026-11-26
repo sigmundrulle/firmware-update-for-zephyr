@@ -113,10 +113,9 @@ int fuz_confirm(void);
  * Call it when the product's self-test after an update has failed. Shut down in an orderly way
  * first, as before fuz_set_ready_for_restart(). Allowed in every confirm mode.
  *
- * Does not return on success.
+ * Does not return if the running image is not confirmed: the board restarts.
  *
  * @retval -EALREADY The running image is already confirmed, so there is nothing to go back to.
- * @retval -EIO The restart did not happen.
  */
 int fuz_revert(void);
 
