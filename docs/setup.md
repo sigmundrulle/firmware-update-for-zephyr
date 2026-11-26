@@ -55,5 +55,24 @@ Then run `west update`.
 * `CONFIG_MCUMGR_GRP_IMG_ALLOW_CONFIRM_NON_ACTIVE_SLOT` left at fuz's default, `n`, so that a client
   cannot confirm an update before it has run. The build stops if the product sets it to `y`.
 
+## Log level
+
+fuz logs through Zephyr's logging, as the log module `fuz`. Its level, `CONFIG_FUZ_LOG_LEVEL`, is
+the most detailed level built into the image; messages above it are left out and cost no flash.
+
+By default (*Default* in menuconfig), it follows Zephyr's `CONFIG_LOG_DEFAULT_LEVEL`, which is 3
+(Info) unless the product sets it: `LOG_ERR`, `LOG_WRN` and `LOG_INF` are built in, `LOG_DBG` is
+not. To set fuz alone, choose a level in the product's `prj.conf`, for example:
+
+```
+CONFIG_FUZ_LOG_LEVEL_DBG=y
+```
+
+The other choices are `_OFF`, `_ERR`, `_WRN` and `_INF`. In menuconfig, the option is *Max
+compiled-in log level for fuz* under the module. Kconfig files and menuconfig name the symbols
+without the `CONFIG_` prefix (`LOG_DEFAULT_LEVEL`); `prj.conf`, `.config` and C code use it.
+
+## If the build stops
+
 If the build stops with `attempt to assign the value 'y' to the undefined symbol FUZ`, Zephyr did
 not find the module: check the path in `ZEPHYR_EXTRA_MODULES`, or that `west update` has fetched it.
