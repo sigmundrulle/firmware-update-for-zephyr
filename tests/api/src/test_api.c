@@ -66,8 +66,6 @@ ZTEST(fuz_api, test_stubs)
 
 	zassert_equal(fuz_set_ready_for_restart(), -ENOENT);
 
-	zassert_equal(fuz_revert(), -ENOTSUP);
-
 	zassert_equal(fuz_get_running_version(&version), -ENOTSUP);
 	zassert_equal(version.major, 7, "version left unchanged on failure");
 

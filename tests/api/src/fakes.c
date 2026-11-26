@@ -1,7 +1,9 @@
 /**
- * @file FFF fakes of the MCUboot functions fuz calls, defined once for every test file, the calls
- * they got during startup, and the rule that resets them before every test.
+ * @file FFF fakes of the MCUboot and reboot functions fuz calls, defined once for every test file,
+ * the calls they got during startup, and the rule that resets them before every test.
  */
+#include <setjmp.h>
+
 #include <zephyr/init.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/toolchain.h>
@@ -13,6 +15,17 @@ DEFINE_FFF_GLOBALS;
 
 DEFINE_FAKE_VALUE_FUNC(bool, boot_is_img_confirmed);
 DEFINE_FAKE_VALUE_FUNC(int, boot_write_img_confirmed);
+DEFINE_FAKE_VOID_FUNC(sys_reboot, int);
+
+jmp_buf sys_reboot_jump;
+
+/* The sys_reboot() fake's body: back to the test's setjmp(), never back to the caller. */
+static void sys_reboot_jumps_back(int type)
+{
+	ARG_UNUSED(type);
+
+	longjmp(sys_reboot_jump, 1);
+}
 
 unsigned int startup_is_confirmed_calls;
 unsigned int startup_write_calls;
@@ -37,7 +50,10 @@ static void fakes_reset_before(const struct ztest_unit_test *test, void *fixture
 
 	RESET_FAKE(boot_is_img_confirmed);
 	RESET_FAKE(boot_write_img_confirmed);
+	RESET_FAKE(sys_reboot);
 	FFF_RESET_HISTORY();
+
+	sys_reboot_fake.custom_fake = sys_reboot_jumps_back;
 }
 
 /* Before every test in every suite, so that no test file can forget it. */
