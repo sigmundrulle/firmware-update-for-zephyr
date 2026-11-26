@@ -140,10 +140,22 @@ int fuz_revert(void)
 
 int fuz_get_running_version(struct mcuboot_img_sem_ver *version)
 {
-	/* Not implemented yet: read the image header in slot 0. */
-	ARG_UNUSED(version);
+	struct mcuboot_img_header header;
+	int rc;
 
-	return -ENOTSUP;
+	if (version == NULL) {
+		return -EINVAL;
+	}
+
+	rc = boot_read_bank_header(boot_fetch_active_slot(), &header, sizeof(header));
+	if (rc != 0) {
+		LOG_ERR("Could not read the running image's header: %d", rc);
+		return rc;
+	}
+
+	*version = header.h.v1.sem_ver;
+
+	return 0;
 }
 
 int fuz_get_secondary_version(struct mcuboot_img_sem_ver *version)
