@@ -17,6 +17,7 @@ DECLARE_FAKE_VALUE_FUNC(bool, boot_is_img_confirmed);
 DECLARE_FAKE_VALUE_FUNC(int, boot_write_img_confirmed);
 DECLARE_FAKE_VALUE_FUNC(uint8_t, boot_fetch_active_slot);
 DECLARE_FAKE_VALUE_FUNC(int, boot_read_bank_header, uint8_t, struct mcuboot_img_header *, size_t);
+DECLARE_FAKE_VALUE_FUNC(int, mcuboot_swap_type);
 DECLARE_FAKE_VOID_FUNC(sys_reboot, int);
 
 /*

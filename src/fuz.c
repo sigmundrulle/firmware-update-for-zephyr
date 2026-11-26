@@ -168,6 +168,19 @@ int fuz_get_secondary_version(struct mcuboot_img_sem_ver *version)
 
 int fuz_is_secondary_pending(void)
 {
-	/* Not implemented yet: MCUboot's swap type for slot 1. */
-	return -ENOTSUP;
+	int swap_type = mcuboot_swap_type();
+
+	switch (swap_type) {
+	case BOOT_SWAP_TYPE_TEST:
+	case BOOT_SWAP_TYPE_PERM:
+		return 1;
+	case BOOT_SWAP_TYPE_NONE:
+	/* The previous image comes back; nothing new waits, as with SMP's pending flag. */
+	case BOOT_SWAP_TYPE_REVERT:
+		return 0;
+	default:
+		/* BOOT_SWAP_TYPE_PANIC (0xff, not an errno): a trailer could not be read. */
+		LOG_ERR("Could not read MCUboot's swap state: %d", swap_type);
+		return -EIO;
+	}
 }
