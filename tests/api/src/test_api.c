@@ -68,6 +68,4 @@ ZTEST(fuz_api, test_stubs)
 
 	zassert_equal(fuz_get_secondary_version(&version), -ENOTSUP);
 	zassert_equal(version.major, 7, "version left unchanged on failure");
-
-	zassert_equal(fuz_is_secondary_pending(), -ENOTSUP);
 }

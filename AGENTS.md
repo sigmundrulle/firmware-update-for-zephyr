@@ -112,8 +112,8 @@ flowchart LR
   (`fuz_init()`), reading whether the image is confirmed, confirming it (`fuz_confirm()`),
   confirming it at startup (`CONFIG_FUZ_CONFIRM_AT_BOOT`, a `SYS_INIT` in `src/fuz.c`), reverting it
   with a restart (`fuz_revert()`), reading the running image's version from its header
-  (`fuz_get_running_version()`), and the Kconfig default that stops the client from confirming
-  slot 1 before it has run.
+  (`fuz_get_running_version()`), whether a new image waits in slot 1 (`fuz_is_secondary_pending()`),
+  and the Kconfig default that stops the client from confirming slot 1 before it has run.
 
 ## Testing Strategy
 
@@ -125,9 +125,9 @@ flowchart LR
   `sys_reboot()` fake `longjmp()`s back to the test, since `sys_reboot()` never returns), reset
   before every test by a `ZTEST_RULE` in `src/fakes.c` (the calls fuz made at startup are saved
   there first, in `startup_*_calls`); one file and one test suite per area (`src/test_api.c`,
-  `src/test_confirm.c`, `src/test_revert.c`, `src/test_version.c`). A function not implemented yet
-  is checked in `test_stubs`; when it is implemented, its line goes and it gets a test of its own.
-  The build fails if Zephyr does not find the module (`undefined symbol FUZ`).
+  `src/test_confirm.c`, `src/test_pending.c`, `src/test_revert.c`, `src/test_version.c`). A function
+  not implemented yet is checked in `test_stubs`; when it is implemented, its line goes and it gets
+  a test of its own. The build fails if Zephyr does not find the module (`undefined symbol FUZ`).
 - CI (`.github/workflows/ci.yml`), on every push, two jobs: `format-check` runs
   `tools/clang-format/check.sh`; `tests` runs `tools/setup.sh`, then `west twister -T tests -p
   native_sim --outdir twister-out --inline-logs`, and uploads the report `twister-out/twister.xml`

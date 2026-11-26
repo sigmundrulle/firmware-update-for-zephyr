@@ -10,6 +10,7 @@ target_sources(app PRIVATE
     src/fakes.c
     src/test_api.c
     src/test_confirm.c
+    src/test_pending.c
     src/test_revert.c
     src/test_version.c
 )

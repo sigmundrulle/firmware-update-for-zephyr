@@ -160,11 +160,13 @@ int fuz_get_secondary_version(struct mcuboot_img_sem_ver *version);
  * @brief Check whether the image in slot 1 will be swapped in at the next restart.
  *
  * This is the case after the client has marked the image with SMP image test or confirm, until
- * the restart.
+ * the restart: the same as the pending flag of slot 1 in SMP image state read. Not while the
+ * running image is not confirmed: MCUboot then swaps the previous image back at the next restart,
+ * which fuz_is_confirmed() shows.
  *
  * @retval 1 A swap is pending.
  * @retval 0 No swap is pending.
- * @retval -errno Negative errno if the slot 1 trailer could not be read.
+ * @retval -EIO MCUboot's swap state could not be read.
  */
 int fuz_is_secondary_pending(void);
 
