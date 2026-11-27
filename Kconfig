@@ -84,12 +84,15 @@ config FUZ_CONFIRM_TIMEOUT_MS
 
 config FUZ_RESET_READY_TIMEOUT_MS
 	int "Time limit for the product to get ready for a restart (ms)"
-	default 5000
+	default 1500
 	range 1 2147483647
 	help
 	  After the client's SMP os reset, the product has this long to call
 	  fuz_set_ready_for_restart(). If it does not, fuz answers the client with busy
 	  and does not restart.
+
+	  Keep it shorter than the client's own timeout, or the client gives up before
+	  the busy answer arrives: smpmgr waits 2 s by default (--timeout).
 
 module = FUZ
 module-str = fuz
