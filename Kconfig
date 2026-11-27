@@ -76,6 +76,7 @@ config FUZ_CONFIRM_TIMEOUT_MS
 	help
 	  If the running image is not confirmed within this time after startup, fuz
 	  restarts without confirming it, and MCUboot goes back to the previous image.
+	  The restart comes at once, without asking the product to shut down first.
 	  Must be longer than the product's self-test.
 
 	  0 means no time limit: the image runs until the next restart. With

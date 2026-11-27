@@ -6,6 +6,7 @@
 
 #include <zephyr/dfu/mcuboot.h>
 #include <zephyr/init.h>
+#include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
 #include <zephyr/logging/log_ctrl.h>
 #include <zephyr/sys/reboot.h>
@@ -15,6 +16,11 @@
 #include "fuz/fuz.h"
 
 LOG_MODULE_REGISTER(fuz, CONFIG_FUZ_LOG_LEVEL);
+
+/* CONFIG_FUZ_CONFIRM_TIMEOUT_MS does not exist with CONFIG_FUZ_CONFIRM_AT_BOOT. */
+#if defined(CONFIG_FUZ_CONFIRM_TIMEOUT_MS) && (CONFIG_FUZ_CONFIRM_TIMEOUT_MS > 0)
+#define FUZ_HAS_CONFIRM_TIMEOUT 1
+#endif
 
 /* The client must not confirm slot 1 before it has run (see docs/decisions.md and Kconfig). */
 BUILD_ASSERT(
@@ -93,6 +99,40 @@ SYS_INIT(fuz_confirm_at_boot, APPLICATION, CONFIG_APPLICATION_INIT_PRIORITY);
 
 #endif /* CONFIG_FUZ_CONFIRM_AT_BOOT */
 
+#if defined(FUZ_HAS_CONFIRM_TIMEOUT)
+
+static void fuz_confirm_timeout_expired(struct k_work *work)
+{
+	ARG_UNUSED(work);
+
+	/* The product or the client confirmed in time. */
+	if (fuz_is_confirmed()) {
+		return;
+	}
+
+	LOG_WRN("Running image not confirmed within %d ms", CONFIG_FUZ_CONFIRM_TIMEOUT_MS);
+	(void)fuz_revert();
+}
+
+static K_WORK_DELAYABLE_DEFINE(fuz_confirm_timeout, fuz_confirm_timeout_expired);
+
+static int fuz_start_confirm_timeout(void)
+{
+	if (fuz_is_confirmed()) {
+		return 0;
+	}
+
+	(void)k_work_schedule(&fuz_confirm_timeout, K_MSEC(CONFIG_FUZ_CONFIRM_TIMEOUT_MS));
+	LOG_INF("Running image not confirmed: restarting in %d ms unless it is",
+		CONFIG_FUZ_CONFIRM_TIMEOUT_MS);
+
+	return 0;
+}
+
+SYS_INIT(fuz_start_confirm_timeout, APPLICATION, CONFIG_APPLICATION_INIT_PRIORITY);
+
+#endif /* FUZ_HAS_CONFIRM_TIMEOUT */
+
 int fuz_confirm(void)
 {
 	int rc;
@@ -115,10 +155,11 @@ int fuz_confirm(void)
 		return rc;
 	}
 
-	/*
-	 * Not implemented yet: stopping the CONFIG_FUZ_CONFIRM_TIMEOUT_MS time limit. Only after a
-	 * successful write, so that MCUboot still goes back if the write failed.
-	 */
+#if defined(FUZ_HAS_CONFIRM_TIMEOUT)
+	/* Only after a successful write, so that MCUboot still goes back if the write failed. */
+	(void)k_work_cancel_delayable(&fuz_confirm_timeout);
+#endif
+
 	LOG_INF("Running image confirmed");
 
 	return 0;
