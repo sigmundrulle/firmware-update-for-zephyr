@@ -1,0 +1,22 @@
+common:
+  platform_allow:
+    - native_sim
+  integration_platforms:
+    - native_sim
+tests:
+  # Default Kconfig: CONFIG_TEST_CASE_EXPIRES, CONFIG_FUZ_CONFIRM_BY_PRODUCT, a 200 ms limit.
+  fuz.confirm_timeout.expires: {}
+  fuz.confirm_timeout.product_confirms:
+    extra_configs:
+      - CONFIG_TEST_CASE_PRODUCT_CONFIRMS=y
+  fuz.confirm_timeout.client_confirms:
+    extra_configs:
+      - CONFIG_TEST_CASE_CLIENT_CONFIRMS=y
+      - CONFIG_FUZ_CONFIRM_BY_CLIENT=y
+  fuz.confirm_timeout.confirmed_at_startup:
+    extra_configs:
+      - CONFIG_TEST_CASE_CONFIRMED_AT_STARTUP=y
+  fuz.confirm_timeout.no_limit:
+    extra_configs:
+      - CONFIG_TEST_CASE_NO_LIMIT=y
+      - CONFIG_FUZ_CONFIRM_TIMEOUT_MS=0

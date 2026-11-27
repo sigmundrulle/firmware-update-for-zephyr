@@ -1,0 +1,25 @@
+# The case this build tests, set in testcase.yaml: fuz starts the time limit once, at startup, so
+# each case needs a program of its own.
+
+choice TEST_CASE
+	prompt "The case this build tests"
+	default TEST_CASE_EXPIRES
+
+config TEST_CASE_EXPIRES
+	bool "Nothing confirms: fuz restarts when the limit has passed"
+
+config TEST_CASE_PRODUCT_CONFIRMS
+	bool "The product confirms in time with fuz_confirm()"
+
+config TEST_CASE_CLIENT_CONFIRMS
+	bool "The client confirms in time (MCUboot's confirmed flag is set)"
+
+config TEST_CASE_CONFIRMED_AT_STARTUP
+	bool "The image is already confirmed at startup: no limit starts"
+
+config TEST_CASE_NO_LIMIT
+	bool "CONFIG_FUZ_CONFIRM_TIMEOUT_MS=0: no limit starts"
+
+endchoice
+
+source "Kconfig.zephyr"

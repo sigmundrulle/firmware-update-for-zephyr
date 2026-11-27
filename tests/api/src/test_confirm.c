@@ -67,6 +67,11 @@ ZTEST(fuz_confirm, test_other_modes_do_not_confirm_at_startup)
 {
 	Z_TEST_SKIP_IFDEF(CONFIG_FUZ_CONFIRM_AT_BOOT);
 
+	/* With a time limit, fuz asks at startup whether to start it (tests/confirm_timeout). */
+#if defined(CONFIG_FUZ_CONFIRM_TIMEOUT_MS) && (CONFIG_FUZ_CONFIRM_TIMEOUT_MS > 0)
+	zassert_equal(startup_is_confirmed_calls, 1);
+#else
 	zassert_equal(startup_is_confirmed_calls, 0);
+#endif
 	zassert_equal(startup_write_calls, 0);
 }
