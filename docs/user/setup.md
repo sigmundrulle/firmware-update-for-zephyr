@@ -1,8 +1,8 @@
 # Adding the module to a product
 
 The module brings no Zephyr of its own: it is built with the Zephyr the product already uses. The
-module's `west.yml`, `tools/` and `deps/` are only for [developing the module](development.md); a product
-never runs `tools/setup.sh`.
+module's `west.yml`, `tools/` and `deps/` are only for
+[developing the module](../contributor/development.md); a product never runs `tools/setup.sh`.
 
 Choose one of the two ways, then enable the module in the product's `prj.conf`:
 
