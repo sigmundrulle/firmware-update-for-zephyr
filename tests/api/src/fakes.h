@@ -1,7 +1,8 @@
 /**
- * @file FFF fakes of the MCUboot and reboot functions fuz calls: native_sim has no MCUboot, and the
- * tests must not restart. They are reset before every test, in every suite, by a ZTEST_RULE in
- * fakes.c, and the calls they got during startup are saved first.
+ * @file FFF fakes of the MCUboot, flash map and reboot functions fuz calls: native_sim has no
+ * MCUboot, each test chooses what slot 1 holds, and the tests must not restart. They are reset
+ * before every test, in every suite, by a ZTEST_RULE in fakes.c, and the calls they got during
+ * startup are saved first.
  */
 #pragma once
 
@@ -12,12 +13,16 @@
 
 #include <zephyr/dfu/mcuboot.h>
 #include <zephyr/fff.h>
+#include <zephyr/storage/flash_map.h>
 
 DECLARE_FAKE_VALUE_FUNC(bool, boot_is_img_confirmed);
 DECLARE_FAKE_VALUE_FUNC(int, boot_write_img_confirmed);
 DECLARE_FAKE_VALUE_FUNC(uint8_t, boot_fetch_active_slot);
 DECLARE_FAKE_VALUE_FUNC(int, boot_read_bank_header, uint8_t, struct mcuboot_img_header *, size_t);
 DECLARE_FAKE_VALUE_FUNC(int, mcuboot_swap_type);
+DECLARE_FAKE_VALUE_FUNC(int, flash_area_open, uint8_t, const struct flash_area **);
+DECLARE_FAKE_VALUE_FUNC(int, flash_area_read, const struct flash_area *, off_t, void *, size_t);
+DECLARE_FAKE_VOID_FUNC(flash_area_close, const struct flash_area *);
 DECLARE_FAKE_VOID_FUNC(sys_reboot, int);
 
 /*

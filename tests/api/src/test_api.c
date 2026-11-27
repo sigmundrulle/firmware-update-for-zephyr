@@ -4,7 +4,6 @@
  */
 #include <errno.h>
 
-#include <zephyr/dfu/mcuboot.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/ztest.h>
 
@@ -58,14 +57,10 @@ ZTEST(fuz_api, test_is_confirmed_asks_mcuboot)
 ZTEST(fuz_api, test_stubs)
 {
 	const uint8_t frame[] = {0x06, 0x09};
-	struct mcuboot_img_sem_ver version = {.major = 7};
 
 	zassert_equal(fuz_receive_smp_frame(frame, sizeof(frame)), -ENOTSUP);
 
 	zassert_false(fuz_is_restart_requested());
 
 	zassert_equal(fuz_set_ready_for_restart(), -ENOENT);
-
-	zassert_equal(fuz_get_secondary_version(&version), -ENOTSUP);
-	zassert_equal(version.major, 7, "version left unchanged on failure");
 }
