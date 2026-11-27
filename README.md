@@ -33,7 +33,7 @@ firmware-update-for-zephyr/
 ├── include/fuz/         the C API
 ├── src/                 the implementation
 ├── tests/               Ztest apps, run by Twister on native_sim
-├── docs/                setup, development, contributing and decisions
+├── docs/                user/ (for products), contributor/ (for work on the module), decisions
 └── west.yml, tools/     workspace for developing the module; not used by a product
 ```
 
@@ -42,8 +42,18 @@ west project, and `zephyr/module.yml` does the rest.
 
 ## Documentation
 
-* [Setup](docs/setup.md): adding the module to a product
-* [Development](docs/development.md): building and testing the module on its own
-* [Contributing](docs/contributing.md): branches, pull requests, review, commits and tests
+For products (`docs/user/`):
+
+* [Setup](docs/user/setup.md): adding the module to a product
+* [SMP buffer size](docs/user/smp-buffer.md): how the buffer size affects upload time, RAM and the
+  serial port
+
+For work on the module (`docs/contributor/`):
+
+* [Development](docs/contributor/development.md): building and testing the module on its own
+* [Contributing](docs/contributor/contributing.md): branches, pull requests, review, commits and
+  tests
+
+For both:
+
 * [Decisions](docs/decisions.md): decisions so far, planned scope and open decisions
-* [SMP buffer size](docs/smp-buffer.md): how the buffer size affects upload time, RAM and the serial port

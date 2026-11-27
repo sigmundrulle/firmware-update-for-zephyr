@@ -67,9 +67,11 @@ int fuz_receive_smp_frame(const uint8_t *data, size_t len);
  * Call it often, for example in every pass of the product's main loop. When it returns true, shut
  * down in an orderly way and then call fuz_set_ready_for_restart().
  *
- * It returns false again if the product does not call fuz_set_ready_for_restart() within
- * CONFIG_FUZ_RESET_READY_TIMEOUT_MS: from the moment fuz answers the client with busy, there is no
- * restart. The product should then resume normal operation.
+ * It returns false again once fuz_set_ready_for_restart() has been called, whatever its result, so
+ * each true is one new request. It also returns false again if the product does not call
+ * fuz_set_ready_for_restart() within CONFIG_FUZ_RESET_READY_TIMEOUT_MS: from the moment fuz
+ * answers the client with busy, there is no restart. The product should then resume normal
+ * operation.
  *
  * @return true if a restart has been requested, false otherwise.
  */

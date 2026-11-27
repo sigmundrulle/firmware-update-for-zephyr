@@ -11,7 +11,7 @@ work here, and where the rest is documented.
 Goals and status are in [README.md](README.md). The decisions so far, the planned scope and the
 open decisions are in [docs/decisions.md](docs/decisions.md): read it before changing anything. How
 we work (branches, pull requests, review, commits, tests) is in
-[docs/contributing.md](docs/contributing.md).
+[docs/contributor/contributing.md](docs/contributor/contributing.md).
 
 ## Repository Structure
 
@@ -25,8 +25,8 @@ we work (branches, pull requests, review, commits, tests) is in
 - `src/` – the implementation (`fuz.c`: `fuz_init()`, `fuz_is_confirmed()` and `fuz_confirm()`;
   the other functions return "not implemented" for now).
 - `tests/` – Ztest apps, one folder each, run by Twister on `native_sim` (`tests/api/`).
-- `docs/` – setup in a product, development, contributing, decisions, and choosing the SMP buffer
-  size.
+- `docs/` – `user/` for products (setup, choosing the SMP buffer size), `contributor/` for work on
+  the module (development, contributing), and the decisions (`decisions.md`) for both.
 - `west.yml`, `tools/` – the west workspace for developing the module on its own; not used by a
   product.
 - `.github/workflows/` – CI.
@@ -68,7 +68,8 @@ build/api/zephyr/zephyr.exe
 Host packages: `git`, `cmake`, `python3` with `venv`, `gcc` and `gcc-multilib` (native_sim is
 32-bit). CI also installs `ninja-build`, `gperf` and `device-tree-compiler`.
 
-Format the C code before committing with `tools/clang-format/fix.sh` (see `docs/development.md`).
+Format the C code before committing with `tools/clang-format/fix.sh` (see
+`docs/contributor/development.md`).
 
 > TODO: building for real boards (needs the Zephyr SDK; `tools/env.sh` uses the host's gcc only).
 
@@ -82,7 +83,7 @@ Format the C code before committing with `tools/clang-format/fix.sh` (see `docs/
   `firmware-update-for-zephyr`.
 - Kconfig files are indented with tabs, as in Zephyr.
 - C code: Zephyr's style, from `.clang-format` (a copy of Zephyr v4.4.2's), checked in CI.
-- Commits: see `docs/contributing.md`.
+- Commits: see `docs/contributor/contributing.md`.
 
 - The C API (`include/fuz/fuz.h`): functions usually return 0 or a negative errno. Two kinds of
   functions return something else: `bool` for yes/no answers that cannot fail, and `int` with 1, 0
@@ -134,7 +135,7 @@ flowchart LR
   `tools/clang-format/check.sh`; `tests` runs `tools/setup.sh`, then `west twister -T tests -p
   native_sim --outdir twister-out --inline-logs`, and uploads the report `twister-out/twister.xml`
   as an artifact (kept 3 days).
-- Which changes need tests, and when to run them: see `docs/contributing.md`.
+- Which changes need tests, and when to run them: see `docs/contributor/contributing.md`.
 
 > TODO: tests on real boards (hardware-in-the-loop), and tests that build for board targets.
 
@@ -155,9 +156,9 @@ flowchart LR
 - **Keep the documentation current, in one place.** Whenever a change affects what this file
   describes (structure, commands, conventions), update `AGENTS.md` in the same pull request;
   decisions, scope and open questions go in `docs/decisions.md`, status and goals in `README.md`,
-  how we work in `docs/contributing.md`. Write each rule in one file only and link to it from the
-  others. Keep it short: replace outdated text instead of adding history.
-- Follow `docs/contributing.md` for branches, pull requests, commits and tests.
+  how we work in `docs/contributor/contributing.md`. Write each rule in one file only and link to
+  it from the others. Keep it short: replace outdated text instead of adding history.
+- Follow `docs/contributor/contributing.md` for branches, pull requests, commits and tests.
 - Never commit or edit generated or fetched files: `.venv/`, `.west/`, `deps/`, `build*/`,
   `twister-out*/`, `flash.bin`.
 - Keep the module product-neutral: no product, board or customer names in code or commits; in the
@@ -173,7 +174,7 @@ What a product can set or connect to change how the module works.
 | Hook | Where | Effect |
 |---|---|---|
 | `CONFIG_FUZ` | `Kconfig` | Builds the module into the application |
-| `CONFIG_FUZ_LOG_LEVEL` | `Kconfig` (Zephyr's log template) | The module's log level; *Default* follows `CONFIG_LOG_DEFAULT_LEVEL` (see `docs/setup.md`) |
+| `CONFIG_FUZ_LOG_LEVEL` | `Kconfig` (Zephyr's log template) | The module's log level; *Default* follows `CONFIG_LOG_DEFAULT_LEVEL` (see `docs/user/setup.md`) |
 | `CONFIG_FUZ_CONFIRM_AT_BOOT`, `_BY_PRODUCT`, `_BY_CLIENT`, `_BY_ANY` | `Kconfig` (a choice) | Who confirms a new image (see `docs/decisions.md`) |
 | `CONFIG_FUZ_CONFIRM_TIMEOUT_MS` | `Kconfig` | Restart without confirm, so MCUboot reverts, if nothing confirms in time |
 | `CONFIG_FUZ_RESET_READY_TIMEOUT_MS` | `Kconfig` | The product's time to get ready for a restart |
@@ -184,8 +185,10 @@ What a product can set or connect to change how the module works.
 ## Further Reading
 
 - [README.md](README.md) – what the module is, and the folder layout.
-- [docs/setup.md](docs/setup.md) – adding the module to a product.
-- [docs/development.md](docs/development.md) – building and testing the module on its own.
-- [docs/contributing.md](docs/contributing.md) – branches, pull requests, review, commits and tests.
+- [docs/user/setup.md](docs/user/setup.md) – adding the module to a product.
+- [docs/user/smp-buffer.md](docs/user/smp-buffer.md) – choosing the SMP buffer size.
+- [docs/contributor/development.md](docs/contributor/development.md) – building and testing the
+  module on its own.
+- [docs/contributor/contributing.md](docs/contributor/contributing.md) – branches, pull requests,
+  review, commits and tests.
 - [docs/decisions.md](docs/decisions.md) – decisions so far, planned scope and open decisions.
-- [docs/smp-buffer.md](docs/smp-buffer.md) – choosing the SMP buffer size.
