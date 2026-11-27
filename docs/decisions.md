@@ -10,7 +10,7 @@ request as the change that makes or changes a decision.
 | Where the module lives | Its own repository from the start, not inside a product, so it can be delivered on its own |
 | Name | Repository `firmware-update-for-zephyr`; module `fuz` (Firmware Update for Zephyr), the prefix of its Kconfig options (`CONFIG_FUZ_*`), headers (`include/fuz/`), C API (`fuz_*`) and log module. Short, since it is typed in every symbol; the README says what it stands for, so it is not read as fuzz testing |
 | C API | `include/fuz/fuz.h`, in C with `extern "C"` guards: setup and transport (`fuz_init()` with the product's write function, `fuz_receive_smp_frame()`), the restart handshake, confirm and revert, and MCUboot's state (confirmed, versions as Zephyr's `struct mcuboot_img_sem_ver`, a pending swap). Functions return 0 or a negative errno; `bool` for answers that cannot fail, `int` with 1, 0 or a negative errno for reads that can |
-| How a product gets it | A git submodule (with `ZEPHYR_EXTRA_MODULES`) or a west project; both are documented in [setup](setup.md) |
+| How a product gets it | A git submodule (with `ZEPHYR_EXTRA_MODULES`) or a west project; both are documented in [setup](user/setup.md) |
 | Zephyr | The module brings no Zephyr; it is built with the product's. Development uses Zephyr v4.4.2 |
 | Tests | Ztest on `native_sim` (32-bit, like the boards) with the host's gcc, run by Twister |
 | Language of the tracked files in the repository | English, since the module goes to other customers |
