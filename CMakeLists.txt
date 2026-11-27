@@ -5,4 +5,6 @@ if(CONFIG_FUZ)
 
   zephyr_library()
   zephyr_library_sources(src/fuz.c)
+  # MCUboot's image format (bootutil/image.h)
+  zephyr_library_link_libraries(MCUBOOT_BOOTUTIL)
 endif()

@@ -7,6 +7,7 @@ menuconfig FUZ
 	select STREAM_FLASH if BOOTLOADER_MCUBOOT
 	select IMG_MANAGER if BOOTLOADER_MCUBOOT
 	select REBOOT if BOOTLOADER_MCUBOOT
+	select MCUBOOT_BOOTUTIL_LIB
 	help
 	  Receive a new image on the application's serial port over SMP, test-run it through
 	  MCUboot, and confirm or revert it. The application passes SMP frames to the module and

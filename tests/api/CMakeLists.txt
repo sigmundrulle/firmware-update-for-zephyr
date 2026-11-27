@@ -14,3 +14,6 @@ target_sources(app PRIVATE
     src/test_revert.c
     src/test_version.c
 )
+
+# MCUboot's image format (bootutil/image.h), to write images into the fake slot 1
+target_link_libraries(app PRIVATE MCUBOOT_BOOTUTIL)

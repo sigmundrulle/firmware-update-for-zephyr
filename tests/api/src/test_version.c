@@ -12,6 +12,8 @@
 #include <zephyr/sys/util.h>
 #include <zephyr/ztest.h>
 
+#include <bootutil/image.h>
+
 #include "fakes.h"
 #include "fuz/fuz.h"
 
@@ -76,13 +78,8 @@ ZTEST(fuz_version, test_running_version_passes_on_read_error)
 static uint8_t slot1[SLOT1_SIZE];
 static const struct flash_area slot1_area = {.fa_size = SLOT1_SIZE};
 
-/* MCUboot's image format, as fuz reads it: header, code, then TLVs with a SHA-256 hash. */
-#define IMAGE_MAGIC         0x96f3b83dU
-#define TLV_INFO_MAGIC      0x6907U
-#define TLV_PROT_INFO_MAGIC 0x6908U
-#define TLV_SHA256          0x10U
-#define HEADER_SIZE         32U
-#define CODE_SIZE           100U
+/* An image as the tests write it: a header, CODE_SIZE bytes of code, then TLVs. */
+#define CODE_SIZE 100U
 
 static int open_slot1(uint8_t id, const struct flash_area **fa)
 {
@@ -108,15 +105,15 @@ static int read_slot1(const struct flash_area *fa, off_t off, void *dst, size_t 
 static size_t put_header(size_t off)
 {
 	sys_put_le32(IMAGE_MAGIC, &slot1[off]);
-	sys_put_le16(HEADER_SIZE, &slot1[off + 8]);
+	sys_put_le16(IMAGE_HEADER_SIZE, &slot1[off + 8]);
 	sys_put_le32(CODE_SIZE, &slot1[off + 12]);
 	slot1[off + 20] = 2U;
 	slot1[off + 21] = 1U;
 	sys_put_le16(3U, &slot1[off + 22]);
 	sys_put_le32(4U, &slot1[off + 24]);
-	memset(&slot1[off + HEADER_SIZE], 0, CODE_SIZE);
+	memset(&slot1[off + IMAGE_HEADER_SIZE], 0, CODE_SIZE);
 
-	return off + HEADER_SIZE + CODE_SIZE;
+	return off + IMAGE_HEADER_SIZE + CODE_SIZE;
 }
 
 /* Write a TLV area at off with the given number of SHA-256 TLVs; return the offset after it. */
@@ -129,7 +126,7 @@ static size_t put_tlvs(size_t off, uint16_t magic, int hashes)
 	for (int i = 0; i < hashes; i++) {
 		size_t tlv = off + 4U + (size_t)i * (4U + 32U);
 
-		sys_put_le16(TLV_SHA256, &slot1[tlv]);
+		sys_put_le16(IMAGE_TLV_SHA256, &slot1[tlv]);
 		sys_put_le16(32U, &slot1[tlv + 2]);
 		memset(&slot1[tlv + 4], 0xab, 32);
 	}
@@ -158,7 +155,7 @@ ZTEST(fuz_secondary_version, test_reads_a_complete_image)
 {
 	struct mcuboot_img_sem_ver version = {0};
 
-	put_tlvs(put_header(0), TLV_INFO_MAGIC, 1);
+	put_tlvs(put_header(0), IMAGE_TLV_INFO_MAGIC, 1);
 
 	zassert_equal(fuz_get_secondary_version(&version), 0);
 	zassert_equal(flash_area_open_fake.arg0_val, PARTITION_ID(slot1_partition), "slot 1");
@@ -174,7 +171,7 @@ ZTEST(fuz_secondary_version, test_reads_past_a_protected_tlv_area)
 {
 	struct mcuboot_img_sem_ver version = {0};
 
-	put_tlvs(put_tlvs(put_header(0), TLV_PROT_INFO_MAGIC, 0), TLV_INFO_MAGIC, 1);
+	put_tlvs(put_tlvs(put_header(0), IMAGE_TLV_PROT_INFO_MAGIC, 0), IMAGE_TLV_INFO_MAGIC, 1);
 
 	zassert_equal(fuz_get_secondary_version(&version), 0);
 	zassert_equal(version.major, 2);
@@ -204,7 +201,7 @@ ZTEST(fuz_secondary_version, test_image_without_a_hash_is_not_valid)
 {
 	struct mcuboot_img_sem_ver version = {.major = 7};
 
-	put_tlvs(put_header(0), TLV_INFO_MAGIC, 0);
+	put_tlvs(put_header(0), IMAGE_TLV_INFO_MAGIC, 0);
 
 	zassert_equal(fuz_get_secondary_version(&version), -ENOENT);
 }
@@ -213,7 +210,7 @@ ZTEST(fuz_secondary_version, test_image_with_two_hashes_is_not_valid)
 {
 	struct mcuboot_img_sem_ver version = {.major = 7};
 
-	put_tlvs(put_header(0), TLV_INFO_MAGIC, 2);
+	put_tlvs(put_header(0), IMAGE_TLV_INFO_MAGIC, 2);
 
 	zassert_equal(fuz_get_secondary_version(&version), -ENOENT);
 }

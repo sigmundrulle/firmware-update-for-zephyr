@@ -14,52 +14,24 @@
 #include <zephyr/sys/util.h>
 #include <zephyr/toolchain.h>
 
+#include <bootutil/image.h>
+
 #include "fuz/fuz.h"
 
-/*
- * MCUboot's image format (bootutil/image.h), read without MCUboot's or mcumgr's headers, which
- * need all of mcumgr. All fields are little endian.
- */
-#define FUZ_IMAGE_MAGIC         0x96f3b83dU
-#define FUZ_TLV_INFO_MAGIC      0x6907U
-#define FUZ_TLV_PROT_INFO_MAGIC 0x6908U
-#define FUZ_TLV_ERASED          0xffffU
+/* The hash TLV MCUboot checks, as mcumgr's image management chooses it. */
 #if defined(CONFIG_MCUBOOT_BOOTLOADER_USES_SHA512)
-#define FUZ_TLV_SHA     0x12U
+#define FUZ_TLV_SHA     IMAGE_TLV_SHA512
 #define FUZ_TLV_SHA_LEN 64U
 #else
-#define FUZ_TLV_SHA     0x10U
+#define FUZ_TLV_SHA     IMAGE_TLV_SHA256
 #define FUZ_TLV_SHA_LEN 32U
 #endif
 
+/* A TLV type in erased flash: the TLV area ends here. */
+#define FUZ_TLV_ERASED 0xffffU
+
 /* The flash area of slot 1. */
 #define FUZ_SLOT1_ID PARTITION_ID(slot1_partition)
-
-struct fuz_image_header {
-	uint32_t magic;
-	uint32_t load_addr;
-	uint16_t hdr_size;
-	uint16_t protect_tlv_size;
-	uint32_t img_size;
-	uint32_t flags;
-	uint8_t ver_major;
-	uint8_t ver_minor;
-	uint16_t ver_revision;
-	uint32_t ver_build_num;
-	uint32_t pad;
-} __packed;
-
-BUILD_ASSERT(sizeof(struct fuz_image_header) == 32, "MCUboot's image header is 32 bytes");
-
-struct fuz_tlv_info {
-	uint16_t magic;
-	uint16_t tot; /* The size of the TLV area, this header included. */
-} __packed;
-
-struct fuz_tlv {
-	uint16_t type;
-	uint16_t len; /* The size of the value after this header. */
-} __packed;
 
 LOG_MODULE_REGISTER(fuz, CONFIG_FUZ_LOG_LEVEL);
 
@@ -216,9 +188,9 @@ int fuz_get_running_version(struct mcuboot_img_sem_ver *version)
 static int read_version_at(const struct flash_area *fa, off_t off,
 			   struct mcuboot_img_sem_ver *version)
 {
-	struct fuz_image_header header;
-	struct fuz_tlv_info info;
-	struct fuz_tlv tlv;
+	struct image_header header;
+	struct image_tlv_info info;
+	struct image_tlv tlv;
 	off_t tlv_off;
 	off_t tlv_end;
 	int hashes = 0;
@@ -229,12 +201,12 @@ static int read_version_at(const struct flash_area *fa, off_t off,
 		return rc;
 	}
 
-	if (sys_le32_to_cpu(header.magic) != FUZ_IMAGE_MAGIC) {
+	if (sys_le32_to_cpu(header.ih_magic) != IMAGE_MAGIC) {
 		return -ENOENT;
 	}
 
 	/* The TLV areas follow the code: the protected one, if there is one, then the hash's. */
-	tlv_off = off + sys_le16_to_cpu(header.hdr_size) + sys_le32_to_cpu(header.img_size);
+	tlv_off = off + sys_le16_to_cpu(header.ih_hdr_size) + sys_le32_to_cpu(header.ih_img_size);
 	if (tlv_off + (off_t)sizeof(info) > (off_t)fa->fa_size) {
 		return -ENOENT;
 	}
@@ -244,8 +216,9 @@ static int read_version_at(const struct flash_area *fa, off_t off,
 		return rc;
 	}
 
-	if (sys_le16_to_cpu(info.magic) == FUZ_TLV_PROT_INFO_MAGIC) {
-		tlv_off += sys_le16_to_cpu(info.tot);
+	if (sys_le16_to_cpu(info.it_magic) == IMAGE_TLV_PROT_INFO_MAGIC) {
+		/* it_tlv_tot includes this header. */
+		tlv_off += sys_le16_to_cpu(info.it_tlv_tot);
 		if (tlv_off + (off_t)sizeof(info) > (off_t)fa->fa_size) {
 			return -ENOENT;
 		}
@@ -256,11 +229,11 @@ static int read_version_at(const struct flash_area *fa, off_t off,
 		}
 	}
 
-	if (sys_le16_to_cpu(info.magic) != FUZ_TLV_INFO_MAGIC) {
+	if (sys_le16_to_cpu(info.it_magic) != IMAGE_TLV_INFO_MAGIC) {
 		return -ENOENT;
 	}
 
-	tlv_end = MIN(tlv_off + (off_t)sys_le16_to_cpu(info.tot), (off_t)fa->fa_size);
+	tlv_end = MIN(tlv_off + (off_t)sys_le16_to_cpu(info.it_tlv_tot), (off_t)fa->fa_size);
 	tlv_off += sizeof(info);
 
 	while (tlv_off + (off_t)sizeof(tlv) <= tlv_end) {
@@ -269,26 +242,26 @@ static int read_version_at(const struct flash_area *fa, off_t off,
 			return rc;
 		}
 
-		if (sys_le16_to_cpu(tlv.type) == FUZ_TLV_ERASED) {
+		if (sys_le16_to_cpu(tlv.it_type) == FUZ_TLV_ERASED) {
 			return -ENOENT;
 		}
 
-		if (sys_le16_to_cpu(tlv.type) == FUZ_TLV_SHA &&
-		    sys_le16_to_cpu(tlv.len) == FUZ_TLV_SHA_LEN) {
+		if (sys_le16_to_cpu(tlv.it_type) == FUZ_TLV_SHA &&
+		    sys_le16_to_cpu(tlv.it_len) == FUZ_TLV_SHA_LEN) {
 			hashes++;
 		}
 
-		tlv_off += sizeof(tlv) + sys_le16_to_cpu(tlv.len);
+		tlv_off += sizeof(tlv) + sys_le16_to_cpu(tlv.it_len);
 	}
 
 	if (hashes != 1) {
 		return -ENOENT;
 	}
 
-	version->major = header.ver_major;
-	version->minor = header.ver_minor;
-	version->revision = sys_le16_to_cpu(header.ver_revision);
-	version->build_num = sys_le32_to_cpu(header.ver_build_num);
+	version->major = header.ih_ver.iv_major;
+	version->minor = header.ih_ver.iv_minor;
+	version->revision = sys_le16_to_cpu(header.ih_ver.iv_revision);
+	version->build_num = sys_le32_to_cpu(header.ih_ver.iv_build_num);
 
 	return 0;
 }
