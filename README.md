@@ -18,10 +18,10 @@ it to its build and enables it with `CONFIG_FUZ=y`.
 
 **Early.** The C API is declared in `include/fuz/fuz.h`, and the Kconfig options for who confirms a
 new image and the time limits exist. Implemented: `fuz_init()`, `fuz_is_confirmed()`,
-`fuz_confirm()`, `fuz_revert()`, `fuz_get_running_version()` and `fuz_is_secondary_pending()`,
-confirming at startup with `CONFIG_FUZ_CONFIRM_AT_BOOT`, and the client cannot confirm an update
-before it has run. The other functions return "not implemented", so the module cannot update a
-product yet.
+`fuz_confirm()`, `fuz_revert()`, `fuz_get_running_version()`, `fuz_get_secondary_version()` and
+`fuz_is_secondary_pending()`, confirming at startup with `CONFIG_FUZ_CONFIRM_AT_BOOT`, and the
+client cannot confirm an update before it has run. The other functions return "not implemented", so
+the module cannot update a product yet.
 
 ## Architecture
 

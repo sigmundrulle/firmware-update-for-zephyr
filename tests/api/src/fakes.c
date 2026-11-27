@@ -18,6 +18,9 @@ DEFINE_FAKE_VALUE_FUNC(int, boot_write_img_confirmed);
 DEFINE_FAKE_VALUE_FUNC(uint8_t, boot_fetch_active_slot);
 DEFINE_FAKE_VALUE_FUNC(int, boot_read_bank_header, uint8_t, struct mcuboot_img_header *, size_t);
 DEFINE_FAKE_VALUE_FUNC(int, mcuboot_swap_type);
+DEFINE_FAKE_VALUE_FUNC(int, flash_area_open, uint8_t, const struct flash_area **);
+DEFINE_FAKE_VALUE_FUNC(int, flash_area_read, const struct flash_area *, off_t, void *, size_t);
+DEFINE_FAKE_VOID_FUNC(flash_area_close, const struct flash_area *);
 DEFINE_FAKE_VOID_FUNC(sys_reboot, int);
 
 jmp_buf sys_reboot_jump;
@@ -56,6 +59,9 @@ static void fakes_reset_before(const struct ztest_unit_test *test, void *fixture
 	RESET_FAKE(boot_fetch_active_slot);
 	RESET_FAKE(boot_read_bank_header);
 	RESET_FAKE(mcuboot_swap_type);
+	RESET_FAKE(flash_area_open);
+	RESET_FAKE(flash_area_read);
+	RESET_FAKE(flash_area_close);
 	RESET_FAKE(sys_reboot);
 	FFF_RESET_HISTORY();
 

@@ -146,15 +146,18 @@ int fuz_get_running_version(struct mcuboot_img_sem_ver *version);
 /**
  * @brief Read the version of the image in slot 1.
  *
- * Slot 1 holds an update waiting to be swapped in, or, after a swap, the previous image.
- * @p version is left unchanged on failure.
+ * Slot 1 holds an update waiting to be swapped in, or, after a swap, the previous image. An image
+ * counts only when it is complete: a header, the TLV area after the code and exactly one hash TLV,
+ * the same check as SMP image state read, so a half-written upload holds no image. With swap using
+ * offset, fuz looks both one sector in and at the start of the slot. @p version is left unchanged
+ * on failure.
  *
  * @param[out] version Filled in with the version from the image header.
  *
  * @retval 0 Success.
  * @retval -EINVAL @p version is NULL.
  * @retval -ENOENT Slot 1 holds no valid image.
- * @retval -errno Other negative errno if the image header could not be read.
+ * @retval -errno Other negative errno if slot 1 could not be opened or read.
  */
 int fuz_get_secondary_version(struct mcuboot_img_sem_ver *version);
 
