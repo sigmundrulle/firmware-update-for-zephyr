@@ -24,7 +24,8 @@ we work (branches, pull requests, review, commits, tests) is in
 - `include/fuz/` – the public C API (`fuz.h`).
 - `src/` – the implementation (`fuz.c`: `fuz_init()`, `fuz_is_confirmed()` and `fuz_confirm()`;
   the other functions return "not implemented" for now).
-- `tests/` – Ztest apps, one folder each, run by Twister on `native_sim` (`tests/api/`).
+- `tests/` – Ztest apps, one folder each, run by Twister on `native_sim` (`tests/api/`,
+  `tests/confirm_timeout/`).
 - `docs/` – `user/` for products (setup, choosing the SMP buffer size), `contributor/` for work on
   the module (development, contributing), and the decisions (`decisions.md`) for both.
 - `west.yml`, `tools/` – the west workspace for developing the module on its own; not used by a
@@ -112,7 +113,8 @@ flowchart LR
   the module confirms the image or resets so that MCUboot reverts it. Implemented so far: the setup
   (`fuz_init()`), reading whether the image is confirmed, confirming it (`fuz_confirm()`),
   confirming it at startup (`CONFIG_FUZ_CONFIRM_AT_BOOT`, a `SYS_INIT` in `src/fuz.c`), reverting it
-  with a restart (`fuz_revert()`), reading the running image's version from its header
+  with a restart (`fuz_revert()`), the time limit for confirming (`CONFIG_FUZ_CONFIRM_TIMEOUT_MS`,
+  delayed work started by a `SYS_INIT`), reading the running image's version from its header
   (`fuz_get_running_version()`), whether a new image waits in slot 1 (`fuz_is_secondary_pending()`),
   and the Kconfig default that stops the client from confirming slot 1 before it has run.
 
@@ -129,6 +131,11 @@ flowchart LR
   `src/test_confirm.c`, `src/test_pending.c`, `src/test_revert.c`, `src/test_version.c`). A function
   not implemented yet is checked in `test_stubs`; when it is implemented, its line goes and it gets
   a test of its own. The build fails if Zephyr does not find the module (`undefined symbol FUZ`).
+- `tests/confirm_timeout/`: `CONFIG_FUZ_CONFIRM_TIMEOUT_MS`. The limit starts once, at startup, so
+  each case is a build of its own (`CONFIG_TEST_CASE_*` in the app's `Kconfig`, set in
+  `testcase.yaml`). It uses `tests/api`'s fakes, but its `sys_reboot()` fake stops the thread
+  instead of `longjmp()`ing: fuz restarts from the system work queue, not the test's thread.
+  native_sim's time is simulated in tests, so the sleeps take no real time.
 - CI (`.github/workflows/ci.yml`), on every push, two jobs: `format-check` runs
   `tools/clang-format/check.sh`; `tests` runs `tools/setup.sh`, then `west twister -T tests -p
   native_sim --outdir twister-out --inline-logs`, and uploads the report `twister-out/twister.xml`
